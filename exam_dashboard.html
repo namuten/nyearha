@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nyearha Academic Curator</title>
+    <!-- Fonts: Manrope & Inter (Editorial Scale) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
+    <!-- CSS (캐시 방지 v3) -->
+    <link rel="stylesheet" href="exam_dashboard.css?v=3">
+    
+    <!-- Marked.js (Markdown 파싱) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- MathJax (수학 수식 렌더링) -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <!-- 인라인 설정 -->
+    <script>
+      MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']]
+        }
+      };
+    </script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar (왼쪽 메뉴) -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>☁️ Exam Prep</h2>
+                <p>Nyearha Study System</p>
+            </div>
+            <ul class="nav-menu" id="navMenu">
+                <!-- Javascript에서 렌더링 -->
+            </ul>
+        </aside>
+
+        <!-- Main Content (우측 메인 본문) -->
+        <main class="main-content">
+            <div class="content-wrapper">
+                <header class="content-header">
+                    <h1 id="subjectTitle">과목을 선택해주세요</h1>
+                </header>
+                <div class="markdown-body" id="contentArea">
+                    <div class="welcome-message">
+                        <div class="icon-pulse">✨</div>
+                        <p>왼쪽 메뉴에서 과목을 선택하여 문제를 풀어보세요!</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- JS Logic -->
+    <script src="exam_dashboard.js"></script>
+</body>
+</html>

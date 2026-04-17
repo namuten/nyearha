@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:22txbook.m-teacher.co.kr)",
+      "WebFetch(domain:q.mirae-n.com)",
+      "Bash(pdftotext -f 10 -l 25 -layout /Users/nagee/git/nyearha/pdfs/0424_공통국어1.pdf -)"
+    ]
+  }
+}

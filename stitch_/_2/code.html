@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-high": "#eae7ef",
+                    "on-surface": "#1b1b21",
+                    "on-secondary": "#ffffff",
+                    "on-primary-fixed-variant": "#303c9a",
+                    "on-tertiary": "#ffffff",
+                    "on-background": "#1b1b21",
+                    "on-tertiary-fixed": "#00201c",
+                    "inverse-on-surface": "#f2eff8",
+                    "primary-fixed": "#dfe0ff",
+                    "outline-variant": "#c6c5d4",
+                    "outline": "#767683",
+                    "on-surface-variant": "#454652",
+                    "surface-dim": "#dbd9e1",
+                    "primary-container": "#142283",
+                    "inverse-primary": "#bcc2ff",
+                    "secondary-fixed-dim": "#bac3ff",
+                    "surface-container-low": "#f5f2fb",
+                    "secondary": "#4858ab",
+                    "tertiary": "#00201c",
+                    "on-tertiary-fixed-variant": "#005048",
+                    "on-error-container": "#93000a",
+                    "surface-container": "#efecf5",
+                    "primary": "#000b60",
+                    "surface-container-highest": "#e4e1ea",
+                    "secondary-fixed": "#dee0ff",
+                    "surface-bright": "#fbf8ff",
+                    "on-primary-fixed": "#000c62",
+                    "tertiary-fixed": "#8df5e4",
+                    "on-secondary-fixed-variant": "#2f3f92",
+                    "surface-container-lowest": "#ffffff",
+                    "on-error": "#ffffff",
+                    "tertiary-fixed-dim": "#70d8c8",
+                    "on-secondary-fixed": "#00105b",
+                    "on-primary": "#ffffff",
+                    "surface-tint": "#4955b3",
+                    "tertiary-container": "#003731",
+                    "primary-fixed-dim": "#bcc2ff",
+                    "background": "#fbf8ff",
+                    "on-primary-container": "#8390f2",
+                    "secondary-container": "#96a5ff",
+                    "surface": "#fbf8ff",
+                    "on-secondary-container": "#27378a",
+                    "inverse-surface": "#303036",
+                    "error": "#ba1a1a",
+                    "on-tertiary-container": "#3ba899",
+                    "surface-variant": "#e4e1ea",
+                    "error-container": "#ffdad6"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            vertical-align: middle;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- TopNavBar (Execution from JSON) -->
+<header class="fixed top-0 w-full z-50 bg-white/80 dark:bg-indigo-950/80 backdrop-blur-xl shadow-sm shadow-indigo-900/5 h-16 flex justify-between items-center px-8 font-['Manrope'] tracking-tight">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-tighter text-indigo-950 dark:text-white">Academic Editorial</span>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-indigo-400 dark:text-indigo-500 hover:text-indigo-600 transition-colors duration-300 ease-in-out" href="#">Exams</a>
+<a class="text-indigo-400 dark:text-indigo-500 hover:text-indigo-600 transition-colors duration-300 ease-in-out" href="#">Analytics</a>
+<a class="text-indigo-700 dark:text-indigo-300 border-b-2 border-indigo-700 pb-1 transition-colors duration-300 ease-in-out" href="#">Subjects</a>
+<a class="text-indigo-400 dark:text-indigo-500 hover:text-indigo-600 transition-colors duration-300 ease-in-out" href="#">Library</a>
+</nav>
+</div>
+<!-- Timer UI Integrated into Top Bar -->
+<div class="flex items-center gap-4 bg-surface-container-low px-4 py-1.5 rounded-full">
+<span class="material-symbols-outlined text-secondary" data-icon="timer">timer</span>
+<span class="font-mono font-bold text-primary tracking-widest">00:42:15</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-indigo-50/50 transition-colors">
+<span class="material-symbols-outlined text-indigo-900" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 rounded-full hover:bg-indigo-50/50 transition-colors">
+<span class="material-symbols-outlined text-indigo-900" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<main class="pt-24 pb-12 px-8 flex gap-8 max-w-[1600px] mx-auto min-h-screen">
+<!-- Problem Solving Area -->
+<section class="flex-1 space-y-8 max-w-4xl">
+<!-- Header Context -->
+<div class="flex justify-between items-end border-b border-outline-variant/10 pb-6">
+<div>
+<span class="text-xs uppercase tracking-[0.2em] font-bold text-secondary mb-2 block">Advanced Mathematics</span>
+<h1 class="text-3xl font-extrabold text-primary tracking-tight">Question 14</h1>
+</div>
+<div class="flex gap-2">
+<span class="bg-tertiary-fixed text-on-tertiary-fixed px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Calculus</span>
+<span class="bg-surface-container-highest text-on-surface-variant px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Difficulty: Hard</span>
+</div>
+</div>
+<!-- The Question Canvas -->
+<div class="bg-surface-container-lowest rounded-xl p-8 shadow-sm">
+<div class="prose prose-indigo max-w-none">
+<p class="text-lg leading-relaxed text-on-surface font-medium mb-8">
+                        The curve $C$ has equation $y = f(x)$, where $f(x) = x^3 - 3x^2 + 4$. The line $L$ is a tangent to $C$ at the point $P(3, 4)$. Determine the area of the region bounded by the curve $C$, the line $L$, and the y-axis, as depicted in the diagram below.
+                    </p>
+<!-- Asymmetric Illustration Placement -->
+<div class="my-10 relative group">
+<img class="rounded-lg w-full h-[400px] object-cover" data-alt="A clean mathematical graph showing a cubic function curve and its tangent line at a specific point on a Cartesian plane with shaded area" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCf2uocnxTR1Vw3xvxY8DmGmNuh9j4YL-0g6lC4D7ja1y8vXXfEMXJiIox4GoVdhPmDD7GolvWPC76ao2cDF9TEvSCWy40pKn3VPhFqAvLA8ZRLc7uK7QOKx6u4ntCBg-fYYEpKSuo0CU3zBsf3A2mdCv9eGa1MgA_p4IH09e-NZJNhkRhBq-kFEjPLR2d3FEkJ3jvXsNWwkFb4UY0lKNH-S4dHOvFcU_052kDjCVrpd_0p7LEkm41Jj5QDox9ssYc4IOuxQloWHr0"/>
+<div class="absolute inset-0 ring-1 ring-inset ring-outline-variant/20 rounded-lg pointer-events-none"></div>
+<div class="mt-2 text-center">
+<span class="text-xs text-on-surface-variant italic font-label">Figure 1: Geometric representation of the integral area</span>
+</div>
+</div>
+</div>
+<!-- Multiple Choice Options -->
+<div class="grid grid-cols-1 gap-4 mt-12">
+<!-- Option 1 -->
+<label class="group relative flex items-center p-4 rounded-xl cursor-pointer bg-surface hover:bg-surface-container-low transition-all duration-200 ring-1 ring-outline-variant/10">
+<input class="sr-only peer" name="math_answer" type="radio"/>
+<div class="w-10 h-10 rounded-lg flex items-center justify-center bg-surface-container-highest text-primary font-bold group-hover:bg-primary-fixed peer-checked:bg-primary peer-checked:text-on-primary transition-colors">1</div>
+<div class="ml-6 font-medium text-on-surface">6.75 Square Units</div>
+<div class="ml-auto opacity-0 peer-checked:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-primary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</label>
+<!-- Option 2 -->
+<label class="group relative flex items-center p-4 rounded-xl cursor-pointer bg-surface hover:bg-surface-container-low transition-all duration-200 ring-1 ring-outline-variant/10">
+<input class="sr-only peer" name="math_answer" type="radio"/>
+<div class="w-10 h-10 rounded-lg flex items-center justify-center bg-surface-container-highest text-primary font-bold group-hover:bg-primary-fixed peer-checked:bg-primary peer-checked:text-on-primary transition-colors">2</div>
+<div class="ml-6 font-medium text-on-surface">12.25 Square Units</div>
+<div class="ml-auto opacity-0 peer-checked:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-primary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</label>
+<!-- Option 3 (Active Selection Example) -->
+<label class="group relative flex items-center p-4 rounded-xl cursor-pointer bg-surface-container-low transition-all duration-200 ring-1 ring-primary/20">
+<input checked="" class="sr-only peer" name="math_answer" type="radio"/>
+<div class="w-10 h-10 rounded-lg flex items-center justify-center bg-primary text-on-primary font-bold">3</div>
+<div class="ml-6 font-medium text-on-surface">20.25 Square Units</div>
+<div class="ml-auto opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-primary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</label>
+<!-- Option 4 -->
+<label class="group relative flex items-center p-4 rounded-xl cursor-pointer bg-surface hover:bg-surface-container-low transition-all duration-200 ring-1 ring-outline-variant/10">
+<input class="sr-only peer" name="math_answer" type="radio"/>
+<div class="w-10 h-10 rounded-lg flex items-center justify-center bg-surface-container-highest text-primary font-bold group-hover:bg-primary-fixed peer-checked:bg-primary peer-checked:text-on-primary transition-colors">4</div>
+<div class="ml-6 font-medium text-on-surface">24.50 Square Units</div>
+<div class="ml-auto opacity-0 peer-checked:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-primary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</label>
+<!-- Option 5 -->
+<label class="group relative flex items-center p-4 rounded-xl cursor-pointer bg-surface hover:bg-surface-container-low transition-all duration-200 ring-1 ring-outline-variant/10">
+<input class="sr-only peer" name="math_answer" type="radio"/>
+<div class="w-10 h-10 rounded-lg flex items-center justify-center bg-surface-container-highest text-primary font-bold group-hover:bg-primary-fixed peer-checked:bg-primary peer-checked:text-on-primary transition-colors">5</div>
+<div class="ml-6 font-medium text-on-surface">None of the above</div>
+<div class="ml-auto opacity-0 peer-checked:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-primary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</label>
+</div>
+<!-- Interaction Footer -->
+<div class="flex justify-between items-center mt-12 pt-8 border-t border-outline-variant/10">
+<button class="flex items-center gap-2 text-on-surface-variant hover:text-primary font-bold transition-colors">
+<span class="material-symbols-outlined" data-icon="flag">flag</span>
+<span>Flag for Review</span>
+</button>
+<div class="flex gap-4">
+<button class="px-8 py-3 rounded-lg font-bold text-on-secondary-container bg-secondary-container hover:bg-secondary transition-all">Clear Response</button>
+<button class="px-10 py-3 rounded-lg font-bold text-on-primary bg-primary hover:shadow-lg hover:shadow-primary/20 transition-all flex items-center gap-2">
+                            Next Question
+                            <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Side: OMR & Navigation Sheet -->
+<aside class="w-80 sticky top-24 h-[calc(100vh-120px)] flex flex-col">
+<div class="bg-surface-container-low rounded-xl p-6 flex-1 flex flex-col overflow-hidden">
+<div class="mb-6">
+<h3 class="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
+<span class="material-symbols-outlined" data-icon="grid_view">grid_view</span>
+                        Quick Navigation
+                    </h3>
+<p class="text-xs text-on-surface-variant mt-1">Section: Pure Mathematics I</p>
+</div>
+<!-- OMR Sheet Grid -->
+<div class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+<div class="grid grid-cols-5 gap-3">
+<!-- Iterative Question Markers -->
+<!-- Row 1-5 -->
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold bg-primary text-on-primary shadow-sm">1</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold bg-primary text-on-primary shadow-sm">2</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold bg-primary text-on-primary shadow-sm">3</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold bg-surface-container-highest text-on-surface-variant">4</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold bg-tertiary-fixed text-on-tertiary-fixed ring-2 ring-tertiary/20">5</button>
+<!-- Row 6-10 -->
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold bg-primary text-on-primary shadow-sm">6</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold bg-surface-container-highest text-on-surface-variant">7</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold bg-surface-container-highest text-on-surface-variant">8</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold bg-surface-container-highest text-on-surface-variant">9</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold bg-surface-container-highest text-on-surface-variant">10</button>
+<!-- Row 11-15 -->
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold bg-surface-container-highest text-on-surface-variant">11</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold bg-primary text-on-primary shadow-sm">12</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold bg-primary text-on-primary shadow-sm">13</button>
+<!-- ACTIVE -->
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold ring-2 ring-primary bg-primary-fixed text-primary animate-pulse">14</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold bg-surface-container-highest text-on-surface-variant">15</button>
+<!-- Extra Padding for Visuals -->
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold bg-surface-container-highest text-on-surface-variant">16</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold bg-surface-container-highest text-on-surface-variant">17</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold bg-surface-container-highest text-on-surface-variant">18</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold bg-surface-container-highest text-on-surface-variant">19</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold bg-surface-container-highest text-on-surface-variant">20</button>
+</div>
+</div>
+<!-- Legend -->
+<div class="mt-6 pt-6 border-t border-outline-variant/10 space-y-3">
+<div class="flex items-center gap-3 text-xs font-medium text-on-surface-variant">
+<div class="w-3 h-3 rounded-full bg-primary"></div>
+<span>Answered (6)</span>
+</div>
+<div class="flex items-center gap-3 text-xs font-medium text-on-surface-variant">
+<div class="w-3 h-3 rounded-full bg-surface-container-highest"></div>
+<span>Unvisited (12)</span>
+</div>
+<div class="flex items-center gap-3 text-xs font-medium text-on-surface-variant">
+<div class="w-3 h-3 rounded-full bg-tertiary-fixed ring-1 ring-tertiary/20"></div>
+<span>Flagged for Review (1)</span>
+</div>
+</div>
+<div class="mt-8">
+<button class="w-full py-4 bg-primary text-on-primary font-black uppercase tracking-widest text-xs rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform">
+                        Final Submission
+                    </button>
+</div>
+</div>
+<!-- Quick Helper / Formula Sheet -->
+<div class="mt-4 bg-primary-container p-4 rounded-xl flex items-center justify-between group cursor-pointer">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary-fixed" data-icon="menu_book">menu_book</span>
+<span class="text-xs font-bold text-white tracking-wide">Formula Booklet</span>
+</div>
+<span class="material-symbols-outlined text-primary-fixed group-hover:translate-x-1 transition-transform" data-icon="open_in_new">open_in_new</span>
+</div>
+</aside>
+</main>
+<!-- Footer (JSON Logic) -->
+<footer class="w-full py-12 border-t border-indigo-100 dark:border-indigo-900 bg-white dark:bg-indigo-950 flex flex-col items-center gap-6 font-['Inter'] text-xs uppercase tracking-widest opacity-80">
+<div class="flex gap-8">
+<a class="text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-200 transition-colors" href="#">Privacy Policy</a>
+<a class="text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-200 transition-colors" href="#">Terms of Service</a>
+<a class="text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-200 transition-colors" href="#">Cookie Settings</a>
+</div>
+<p class="text-indigo-900 dark:text-indigo-100 font-bold">© 2024 Academic Editorial. Architecture of Focus.</p>
+</footer>
+</body></html>
