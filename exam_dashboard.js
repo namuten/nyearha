@@ -23,6 +23,25 @@ document.addEventListener('DOMContentLoaded', () => {
         navMenu.appendChild(li);
     });
 
+    // 여행 계획 메뉴 추가
+    const travelLi = document.createElement('li');
+    travelLi.className = 'nav-item';
+    travelLi.innerHTML = `<span>🌿</span> 강원도 가족여행`;
+    
+    travelLi.addEventListener('click', () => {
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        travelLi.classList.add('active');
+        subjectTitle.innerHTML = `🌿 강원도 가족여행`;
+        
+        // iframe으로 travel_plan.html을 깔끔하게 메인 영역에 삽입
+        contentArea.innerHTML = `
+            <div style="width: 100%; height: calc(100vh - 14rem); border-radius: var(--radius-xl); overflow: hidden; box-shadow: var(--shadow-ambient); background: #ffffff; border: 1px solid rgba(198, 197, 212, 0.15);">
+                <iframe src="travel_plan.html" style="width: 100%; height: 100%; border: none;" title="강원도 가족여행 계획"></iframe>
+            </div>
+        `;
+    });
+    navMenu.appendChild(travelLi);
+
     async function loadAndTransformMarkdown(item, listItem) {
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
         listItem.classList.add('active');
