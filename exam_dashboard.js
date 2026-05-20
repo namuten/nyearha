@@ -23,22 +23,73 @@ document.addEventListener('DOMContentLoaded', () => {
         navMenu.appendChild(li);
     });
 
-    // 여행 계획 메뉴 추가
+    // 여행 계획 메뉴 추가 (Single DOM SPA 병합 및 글로벌 윈도우 스크립트 바인딩)
     const travelLi = document.createElement('li');
     travelLi.className = 'nav-item';
     travelLi.innerHTML = `<span>🌿</span> 강원도 가족여행`;
     
-    travelLi.addEventListener('click', () => {
+    // travel_plan.html에 존재하던 전역 함수들 이식 (인라인 onclick에 대응)
+    window.showTab = function(id) {
+        document.querySelectorAll('.travel-merged-container .section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.travel-merged-container .tab').forEach(t => t.classList.remove('active'));
+        const targetSec = document.getElementById('tab-' + id);
+        if (targetSec) targetSec.classList.add('active');
+        if (event && event.target) {
+            event.target.classList.add('active');
+        }
+    };
+
+    window.toggleCheck = function(item) {
+        const box = item.querySelector('.check-box');
+        box.classList.toggle('checked');
+        if (box.classList.contains('checked')) {
+            box.textContent = '✓';
+            item.style.opacity = '0.5';
+            item.querySelector('div:last-child').style.textDecoration = 'line-through';
+        } else {
+            box.textContent = '';
+            item.style.opacity = '1';
+            item.querySelector('div:last-child').style.textDecoration = 'none';
+        }
+    };
+
+    travelLi.addEventListener('click', async () => {
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
         travelLi.classList.add('active');
         subjectTitle.innerHTML = `🌿 강원도 가족여행`;
+        contentArea.innerHTML = '<div style="text-align:center; padding:4rem;">여행 계획을 불러오는 중입니다 🌿</div>';
         
-        // iframe으로 travel_plan.html을 깔끔하게 메인 영역에 삽입
-        contentArea.innerHTML = `
-            <div style="width: 100%; height: calc(100vh - 14rem); border-radius: var(--radius-xl); overflow: hidden; box-shadow: var(--shadow-ambient); background: #ffffff; border: 1px solid rgba(198, 197, 212, 0.15);">
-                <iframe src="travel_plan.html" style="width: 100%; height: 100%; border: none;" title="강원도 가족여행 계획"></iframe>
-            </div>
-        `;
+        try {
+            const response = await fetch('travel_plan.html?t=' + new Date().getTime());
+            if (!response.ok) throw new Error('파일을 로드하지 못했습니다.');
+            const htmlText = await response.text();
+            
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlText, 'text/html');
+            
+            // 스타일 동적 획득 및 삽입
+            const styleTag = doc.querySelector('style');
+            let styleHtml = '';
+            if (styleTag) {
+                // 부모 index.html과의 스타일 오염 최소화를 위해 travel-merged-container 하위 선택자로 작용하도록 약간 변경하거나, 
+                // travel_plan.html의 리스타일링된 CSS가 워낙 범용적이고 이뻐서 그대로 사용함
+                styleHtml = styleTag.outerHTML;
+            }
+            
+            // body 안의 html 내용
+            const bodyHtml = doc.body.innerHTML;
+            
+            // 메인 영역에 iframe 없이 직접 병합
+            contentArea.innerHTML = `
+                <div class="travel-merged-container" style="animation: fadeIn 0.4s ease;">
+                    ${styleHtml}
+                    ${bodyHtml}
+                </div>
+            `;
+        } catch (e) {
+            console.error(e);
+            contentArea.innerHTML = '<div style="text-align:center; padding:4rem; color:var(--primary);">여행 계획 로드에 실패했습니다. ☁️</div>';
+        }
     });
     navMenu.appendChild(travelLi);
 
