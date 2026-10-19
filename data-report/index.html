@@ -1,0 +1,714 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>동영상 서비스 이용 방식 분석</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7;
+  --surface: #fcfcfb;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --muted: #898781;
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --border: rgba(11,11,11,0.10);
+  --s1: #2a78d6;  /* 배속 */
+  --s2: #eb6834;  /* 건너뛰기 */
+  --s3: #1baf7a;  /* 인공지능 콘텐츠 */
+  --d-neg2: #c43c3c;
+  --d-neg1: #f0a09f;
+  --d-mid: #d9d8d2;
+  --d-pos1: #86b6ef;
+  --d-pos2: #1c5cab;
+  --d-ext-label: #ffffff;
+  --seq-lo: #cde2fb;
+  --seq-hi: #104281;
+  --accent-bg: #eef4fc;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #0d0d0d;
+    --surface: #1a1a19;
+    --ink: #f0efec;
+    --ink-2: #c3c2b7;
+    --muted: #898781;
+    --grid: #2c2c2a;
+    --axis: #383835;
+    --border: rgba(255,255,255,0.10);
+    --s1: #3987e5;
+    --s2: #d95926;
+    --s3: #199e70;
+    --d-neg2: #e66767;
+    --d-neg1: #8a3a3a;
+    --d-mid: #4a4a46;
+    --d-pos1: #2f5f99;
+    --d-pos2: #6da7ec;
+    --d-ext-label: #0b0b0b;
+    --seq-lo: #1d2a3a;
+    --seq-hi: #86b6ef;
+    --accent-bg: #18222e;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d;
+  --surface: #1a1a19;
+  --ink: #f0efec;
+  --ink-2: #c3c2b7;
+  --muted: #898781;
+  --grid: #2c2c2a;
+  --axis: #383835;
+  --border: rgba(255,255,255,0.10);
+  --s1: #3987e5;
+  --s2: #d95926;
+  --s3: #199e70;
+  --d-neg2: #e66767;
+  --d-neg1: #8a3a3a;
+  --d-mid: #4a4a46;
+  --d-pos1: #2f5f99;
+  --d-pos2: #6da7ec;
+  --d-ext-label: #0b0b0b;
+  --seq-lo: #1d2a3a;
+  --seq-hi: #86b6ef;
+  --accent-bg: #18222e;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--page); color: var(--ink);
+  font: 16px/1.7 system-ui, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  word-break: keep-all;
+}
+main { max-width: 1040px; margin: 0 auto; padding: 32px 16px 80px; }
+header { padding: 24px 0 8px; }
+.kicker { color: var(--ink-2); font-size: 14px; margin: 0 0 6px; }
+h1 { font-size: clamp(26px, 4vw, 36px); line-height: 1.3; margin: 0 0 12px; letter-spacing: -0.01em; }
+h2 { font-size: 22px; margin: 0 0 4px; }
+h3 { font-size: 17px; margin: 20px 0 6px; }
+.lede { color: var(--ink-2); max-width: 760px; margin: 0; }
+nav.toc { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 20px 0 8px; font-size: 14px; }
+nav.toc a { color: var(--ink-2); text-decoration: none; border-bottom: 1px solid var(--axis); }
+nav.toc a:hover { color: var(--ink); }
+section { margin-top: 40px; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 20px; margin-top: 14px;
+}
+.sub { color: var(--ink-2); font-size: 15px; margin: 0 0 10px; }
+.chart { width: 100%; height: 380px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 20px; }
+.tile { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
+.tile .label { display: flex; align-items: center; gap: 8px; color: var(--ink-2); font-size: 14px; }
+.tile .num { font-size: 40px; font-weight: 700; line-height: 1.2; margin-top: 6px; }
+.tile .num small { font-size: 16px; font-weight: 500; color: var(--ink-2); margin-left: 2px; }
+.tile .meta { font-size: 14px; color: var(--ink-2); }
+.swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; flex: none; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 760px) { .grid2 { grid-template-columns: 1fr; } .chart { height: 340px; } }
+.finding { background: var(--accent-bg); border-radius: 10px; padding: 12px 16px; margin-top: 12px; font-size: 15px; }
+.finding b { color: var(--ink); }
+.filters { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 10px; }
+.filters button {
+  font: inherit; font-size: 14px; padding: 5px 12px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--axis); background: transparent; color: var(--ink-2);
+}
+.filters button[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; font-variant-numeric: tabular-nums; }
+th, td { padding: 6px 8px; border-bottom: 1px solid var(--grid); text-align: right; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+thead th { color: var(--ink-2); font-weight: 600; border-bottom: 1px solid var(--axis); }
+.tablewrap { overflow-x: auto; }
+details { margin-top: 10px; }
+summary { cursor: pointer; color: var(--ink-2); font-size: 14px; }
+.legend-inline { display: flex; flex-wrap: wrap; gap: 14px; font-size: 14px; color: var(--ink-2); margin-bottom: 4px; }
+.legend-inline span { display: inline-flex; align-items: center; gap: 6px; }
+.paper { border: 1px dashed var(--axis); border-radius: 12px; padding: 18px 20px; margin-top: 14px; background: var(--surface); }
+.paper h3 { margin-top: 0; }
+.paper p { margin: 6px 0; }
+ol, ul { padding-left: 22px; }
+.note { font-size: 13px; color: var(--muted); }
+.rawmeta { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 4px 16px; font-size: 14px; color: var(--ink-2); margin: 6px 0 12px; }
+.rawmeta b { color: var(--ink); font-weight: 600; }
+.rawwrap { max-height: 560px; overflow: auto; border: 1px solid var(--grid); border-radius: 8px; }
+.rawwrap thead th { position: sticky; top: 0; background: var(--surface); z-index: 1; white-space: normal; min-width: 64px; vertical-align: bottom; }
+.rawwrap tr.dimstart td { border-top: 1px solid var(--axis); }
+.rawwrap tr.total td { font-weight: 700; }
+.rawwrap tr.small td { color: var(--muted); }
+.rawwrap th:nth-child(2), .rawwrap td:nth-child(2) { text-align: left; }
+.rawwrap td.dim { font-weight: 600; color: var(--ink); }
+.rawfoot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; margin-top: 10px; }
+.rawfoot .note { margin: 0; }
+.dlbtn { font: inherit; font-size: 14px; padding: 6px 14px; border-radius: 8px; cursor: pointer; border: 1px solid var(--axis); background: transparent; color: var(--ink); }
+.dlbtn:hover { background: var(--accent-bg); }
+.themebtn { float: right; font: inherit; font-size: 13px; border: 1px solid var(--axis); background: transparent; color: var(--ink-2); border-radius: 999px; padding: 4px 12px; cursor: pointer; }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <button class="themebtn" id="themebtn" type="button">화면 밝기 전환</button>
+  <p class="kicker">통합과학 2학기 수행평가 · 주제탐구활동 · 데이터 시각화로 빅데이터 표현하기</p>
+  <h1>빨리 감고, 건너뛰고, 인공지능이 만든 영상까지<br>누가 동영상을 '내 방식대로' 볼까?</h1>
+  <p class="lede">2025년 콘텐츠이용행태조사(한국콘텐츠진흥원) 응답자 약 6천 명의 자료로, 온라인 동영상 서비스에서 <b>배속 기능</b>과 <b>건너뛰기 기능</b>을 얼마나 쓰는지, <b>인공지능을 활용한 콘텐츠</b>를 어떻게 생각하는지 성별·연령·지역·직업·학력·가구소득별로 비교했습니다.</p>
+  <nav class="toc" aria-label="목차">
+    <a href="#s-overall">전체 응답</a><a href="#s-age">연령</a><a href="#s-income">가구소득</a>
+    <a href="#s-explore">그룹 비교</a><a href="#s-stack">응답 구성</a><a href="#s-heat">한눈에 보기</a>
+    <a href="#s-rel">항목 사이 관계</a><a href="#s-odd">특이점</a><a href="#s-test">통계 검정</a><a href="#s-use">활용 방법</a><a href="#s-paper">종이 옮겨쓰기용</a><a href="#s-raw">원자료</a>
+  </nav>
+</header>
+
+<div class="tiles" id="tiles"></div>
+
+<section id="s-overall">
+  <h2>1. 전체 응답 분포</h2>
+  <p class="sub">5단계 응답을 왼쪽(부정)에서 오른쪽(긍정)으로 쌓았습니다. 막대에 마우스를 올리면 정확한 비율이 보입니다.</p>
+  <div class="card"><div id="c-dist" class="chart" style="height:280px"></div>
+    <div class="finding" id="f-dist"></div>
+  </div>
+</section>
+
+<section id="s-age">
+  <h2>2. 나이가 많을수록 '내 방식대로' 보는 사람이 줄어든다</h2>
+  <p class="sub">연령별 100점 환산 평균(높을수록 그 기능을 자주 쓰거나 긍정적으로 생각함)</p>
+  <div class="card"><div id="c-age" class="chart"></div>
+    <details><summary>표로 보기</summary><div class="tablewrap" id="t-age"></div></details>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">젊은 층(10~30대)과 높은 연령층(60대 이상)의 긍정 응답 비율</h3>
+    <div class="legend-inline"><span><span class="swatch" style="background:var(--ink);border-radius:50%"></span>10~30대</span><span><span class="swatch" style="border:2px solid var(--ink);border-radius:50%"></span>60대 이상</span></div>
+    <div id="c-gap" class="chart" style="height:240px"></div>
+    <div class="finding" id="f-age"></div>
+  </div>
+</section>
+
+<section id="s-income">
+  <h2>3. 가구소득이 높을수록 점수도 오른다</h2>
+  <p class="sub">월평균 가구소득 구간별 100점 환산 평균</p>
+  <div class="card"><div id="c-income" class="chart"></div>
+    <details><summary>표로 보기</summary><div class="tablewrap" id="t-income"></div></details>
+    <div class="finding" id="f-income"></div>
+  </div>
+</section>
+
+<section id="s-explore">
+  <h2>4. 특성별로 골라 비교하기</h2>
+  <p class="sub">기준을 바꿔 가며 세 항목의 100점 환산 평균을 비교해 보세요. ※ 표시는 응답자가 100명 미만이라 해석에 주의가 필요한 그룹입니다.</p>
+  <div class="card">
+    <div class="filters" id="dimFilters" role="group" aria-label="비교 기준"></div>
+    <div id="c-explore" class="chart" style="height:420px"></div>
+    <div class="finding" id="f-explore"></div>
+  </div>
+</section>
+
+<section id="s-stack">
+  <h2>5. 연령에 따라 응답 구성이 어떻게 바뀌나</h2>
+  <p class="sub">항목을 고르면 연령대별 5단계 응답 비율(합계 100%)을 보여 줍니다.</p>
+  <div class="card">
+    <div class="filters" id="itemFilters" role="group" aria-label="항목 선택"></div>
+    <div id="c-stack" class="chart" style="height:400px"></div>
+  </div>
+</section>
+
+<section id="s-heat">
+  <h2>6. 모든 그룹을 한눈에</h2>
+  <p class="sub">색이 진할수록 100점 환산 평균이 높습니다(응답자 100명 이상인 37개 그룹).</p>
+  <div class="card"><div id="c-heat" class="chart" style="height:980px"></div></div>
+</section>
+
+<section id="s-rel">
+  <h2>7. 세 항목은 함께 움직일까?</h2>
+  <p class="sub">점 하나가 그룹 하나(예: 20대, 서울, 학생)입니다. 오른쪽 위로 갈수록 두 항목 점수가 모두 높습니다.</p>
+  <div class="grid2">
+    <div class="card"><h3 style="margin-top:0">배속 기능 × 건너뛰기 기능</h3><div id="c-sc1" class="chart" style="height:340px"></div></div>
+    <div class="card"><h3 style="margin-top:0">건너뛰기 기능 × 인공지능 콘텐츠 인식</h3><div id="c-sc2" class="chart" style="height:340px"></div></div>
+  </div>
+  <div class="finding" id="f-rel"></div>
+</section>
+
+<section id="s-odd">
+  <h2>8. 특이점: 인공지능 콘텐츠, 20대가 유독 부정적일까?</h2>
+  <p class="sub">연령별 꺾은선에서 인공지능 콘텐츠 점수는 10대에서 20대로 넘어갈 때 크게 떨어집니다. 다른 두 항목은 20대가 가장 높은데, 왜 이 항목만 다를까요?</p>
+  <div class="card">
+    <h3 style="margin-top:0">연령별 인공지능 콘텐츠 긍정·부정 응답 비율</h3>
+    <div id="c-odd" class="chart" style="height:340px"></div>
+    <div class="finding" id="f-odd"></div>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">20대는 정말 다른 연령대와 다를까? (두 비율 차이 검정)</h3>
+    <div class="tablewrap" id="t-odd"></div>
+    <p class="note">유의확률이 0.05보다 작으면 우연으로 보기 어려운 차이입니다.</p>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">왜 그럴까? — 생각해 볼 수 있는 이유</h3>
+    <p class="sub" style="margin-bottom:6px">이 자료에는 이유를 묻는 문항이 없어서, 아래는 데이터로 확인한 사실이 아니라 가설입니다.</p>
+    <ol>
+      <li><b>새로운 것에 대한 호기심(10대):</b> 사진 꾸미기, 짧은 영상, 게임처럼 재미있는 경험으로 인공지능을 먼저 만나 거부감이 적을 수 있다.</li>
+      <li><b>일자리에 대한 걱정(20대):</b> 취업을 앞두거나 막 일을 시작한 세대라, 그림·글쓰기·영상 편집처럼 인공지능이 대신할 수 있는 일에 대한 걱정이 클 수 있다.</li>
+      <li><b>많이 알아서 생기는 경계심(20대):</b> 인공지능을 직접 많이 써 본 만큼 가짜 영상, 저작권 문제, 품질 낮은 인공지능 영상을 더 자주 접했을 수 있다.</li>
+      <li><b>낯섦에서 오는 부정(60대 이상):</b> 높은 연령층의 부정은 경험 부족과 낯섦 때문일 가능성이 커서, 20대의 경계심과는 성격이 다를 수 있다.</li>
+    </ol>
+    <p class="note">더 확인하려면 같은 조사의 '인공지능 콘텐츠에 대한 우려 사항'이나 '인공지능 콘텐츠 이용 경험' 자료를 함께 살펴보면 된다.</p>
+  </div>
+</section>
+
+<section id="s-test">
+  <h2>9. 통계 검정 결과</h2>
+  <p class="sub">각 특성(성별, 연령 등)에 따라 응답 분포가 달라지는지 카이제곱 독립성 검정으로 확인했습니다. 크라메르 계수는 차이의 크기(0에 가까울수록 작음)이고, 유의확률이 0.05보다 작으면 우연이라 보기 어려운 차이입니다.</p>
+  <div class="card"><div class="tablewrap" id="t-chi"></div>
+    <p class="note">응답 인원은 '비율 × 사례수'로 되살린 값이며, 원자료의 가중치를 반영하지 못해 실제 검정과 조금 다를 수 있습니다.</p>
+  </div>
+  <div class="card"><h3 style="margin-top:0">순위 상관(연령·가구소득이 커질수록 점수가 어떻게 변하는가)</h3><div class="tablewrap" id="t-trend"></div></div>
+</section>
+
+<section id="s-use">
+  <h2>10. 데이터 활용 방법과 적용점</h2>
+  <div class="card">
+    <ol>
+      <li><b>동영상 서비스 기업:</b> 젊은 층과 고소득층은 배속·건너뛰기 기능을 많이 쓰므로, 장면 요약이나 '핵심 장면 바로 가기' 기능을 강화하면 만족도를 높일 수 있다. 반대로 60대 이상은 이 기능을 거의 쓰지 않으므로 큰 글씨 화면, 쉬운 조작법 안내 같은 다른 편의 기능이 필요하다.</li>
+      <li><b>콘텐츠 제작자:</b> 시청자가 지루한 구간을 건너뛴다는 것은 앞부분 몇 분 안에 관심을 끌어야 한다는 뜻이다. 건너뛰기가 많이 일어나는 구간 자료를 함께 모으면 편집 방식을 개선할 수 있다.</li>
+      <li><b>정부·공공기관:</b> 저소득층과 고령층은 인공지능 콘텐츠에 대한 긍정 인식이 낮고 새 기능 사용도 적다. 이는 디지털 격차로 이어질 수 있으므로 디지털 교육이나 인공지능 콘텐츠 표시 제도처럼 신뢰를 높이는 정책을 마련하는 근거로 쓸 수 있다.</li>
+      <li><b>개인(나):</b> 나도 배속·건너뛰기를 자주 쓰는 10대에 속한다. 빠르게 보는 습관이 집중력이나 감상 방식에 어떤 영향을 주는지 스스로 기록해 보는 계기로 삼을 수 있다.</li>
+    </ol>
+  </div>
+</section>
+
+<section id="s-paper">
+  <h2>11. 종이에 옮겨 쓰기용 정리</h2>
+  <p class="sub">수행평가 종이 두 장에 그대로 옮겨 적을 수 있도록 정리한 초안입니다.</p>
+  <div class="paper" id="paper1"></div>
+  <div class="paper" id="paper2"></div>
+</section>
+
+<section id="s-raw">
+  <h2>12. 원자료 보기</h2>
+  <p class="sub">국가통계포털에서 내려받은 표를 숫자 그대로 옮겼습니다. 이 보고서의 모든 그래프는 아래 표에서 계산했습니다.</p>
+  <div class="card">
+    <div class="filters" id="rawFilters" role="group" aria-label="원자료 선택"></div>
+    <div class="rawmeta" id="raw-meta"></div>
+    <div class="tablewrap rawwrap" id="t-raw"></div>
+    <div class="rawfoot">
+      <p class="note">※ 응답자 100명 미만 그룹(분석에서 제외). 통계표 이름의 영문 약어는 우리말로 바꿔 표시했습니다. 반올림 때문에 비율 합계가 100%와 조금 다를 수 있습니다.</p>
+      <button type="button" class="dlbtn" id="rawDown">이 표 내려받기(엑셀로 열기)</button>
+    </div>
+  </div>
+</section>
+
+<section id="s-limit">
+  <h2>13. 자료 출처와 한계</h2>
+  <div class="card">
+    <ul>
+      <li>출처: 한국콘텐츠진흥원 「콘텐츠이용행태조사」(2025), 국가통계포털에서 2026년 10월 8일 내려받음.</li>
+      <li>배속·건너뛰기 문항은 최근 1년 동영상 서비스 이용자 5,841명, 인공지능 콘텐츠 문항은 6,554명이 응답해 응답자 범위가 조금 다르다.</li>
+      <li>개인별 응답이 아니라 그룹별로 묶인 표이므로, 항목 사이의 상관은 '그룹 단위' 경향이다. 한 사람이 두 기능을 모두 쓰는지까지는 알 수 없다.</li>
+      <li>성별·연령·지역 등 그룹은 같은 사람들을 다른 기준으로 나눈 것이라 서로 독립적이지 않다.</li>
+      <li>응답자가 100명 미만인 그룹(3세대가구, 가족구성 기타, 직업 기타)은 비교에서 제외하거나 ※로 표시했다.</li>
+    </ul>
+  </div>
+</section>
+</main>
+
+<script>
+const DATA = {"results": {"overall": {"speed": {"n": 5841.0, "lv1": 19.8, "lv2": 19.6, "lv3": 25.7, "lv4": 31.8, "lv5": 3.1, "mean5": 2.8, "mean100": 55.7, "pos": 34.9, "neg": 39.400000000000006}, "skip": {"n": 5841.0, "lv1": 15.7, "lv2": 15.9, "lv3": 28.6, "lv4": 33.8, "lv5": 6.0, "mean5": 3.0, "mean100": 59.7, "pos": 39.8, "neg": 31.6}, "ai": {"n": 6554.0, "lv1": 5.7, "lv2": 17.9, "lv3": 36.2, "lv4": 35.2, "lv5": 5.0, "mean5": 3.2, "mean100": 63.2, "pos": 40.2, "neg": 23.6}}, "groups": [{"dim": "전체", "group": "소계", "item": "speed", "n": 5841, "lv1": 19.8, "lv2": 19.6, "lv3": 25.7, "lv4": 31.8, "lv5": 3.1, "mean100": 55.7, "pos": 34.9, "neg": 39.400000000000006, "small": false}, {"dim": "성별", "group": "남성", "item": "speed", "n": 2946, "lv1": 19.2, "lv2": 19.9, "lv3": 24.9, "lv4": 33.0, "lv5": 3.0, "mean100": 56.2, "pos": 36.0, "neg": 39.1, "small": false}, {"dim": "성별", "group": "여성", "item": "speed", "n": 2895, "lv1": 20.5, "lv2": 19.4, "lv3": 26.5, "lv4": 30.6, "lv5": 3.1, "mean100": 55.3, "pos": 33.7, "neg": 39.9, "small": false}, {"dim": "연령", "group": "10대", "item": "speed", "n": 593, "lv1": 13.5, "lv2": 17.6, "lv3": 25.0, "lv4": 38.9, "lv5": 5.1, "mean100": 60.9, "pos": 44.0, "neg": 31.1, "small": false}, {"dim": "연령", "group": "20대", "item": "speed", "n": 806, "lv1": 12.5, "lv2": 13.2, "lv3": 25.8, "lv4": 41.9, "lv5": 6.6, "mean100": 63.4, "pos": 48.5, "neg": 25.7, "small": false}, {"dim": "연령", "group": "30대", "item": "speed", "n": 886, "lv1": 14.2, "lv2": 13.8, "lv3": 23.0, "lv4": 44.3, "lv5": 4.8, "mean100": 62.3, "pos": 49.1, "neg": 28.0, "small": false}, {"dim": "연령", "group": "40대", "item": "speed", "n": 1017, "lv1": 16.5, "lv2": 17.4, "lv3": 28.5, "lv4": 34.9, "lv5": 2.7, "mean100": 58.0, "pos": 37.6, "neg": 33.9, "small": false}, {"dim": "연령", "group": "50대", "item": "speed", "n": 1112, "lv1": 20.2, "lv2": 25.0, "lv3": 26.1, "lv4": 27.6, "lv5": 1.1, "mean100": 52.9, "pos": 28.700000000000003, "neg": 45.2, "small": false}, {"dim": "연령", "group": "60대", "item": "speed", "n": 900, "lv1": 30.6, "lv2": 25.7, "lv3": 25.2, "lv4": 17.7, "lv5": 0.8, "mean100": 46.5, "pos": 18.5, "neg": 56.3, "small": false}, {"dim": "연령", "group": "70세 이상", "item": "speed", "n": 527, "lv1": 34.8, "lv2": 24.4, "lv3": 25.1, "lv4": 14.5, "lv5": 1.2, "mean100": 44.6, "pos": 15.7, "neg": 59.2, "small": false}, {"dim": "가족구성", "group": "독신가구", "item": "speed", "n": 976, "lv1": 25.7, "lv2": 16.4, "lv3": 25.1, "lv4": 29.4, "lv5": 3.4, "mean100": 53.7, "pos": 32.8, "neg": 42.1, "small": false}, {"dim": "가족구성", "group": "1세대가구", "item": "speed", "n": 1601, "lv1": 24.5, "lv2": 24.4, "lv3": 26.3, "lv4": 22.8, "lv5": 2.0, "mean100": 50.7, "pos": 24.8, "neg": 48.9, "small": false}, {"dim": "가족구성", "group": "2세대가구", "item": "speed", "n": 3184, "lv1": 15.2, "lv2": 18.3, "lv3": 25.7, "lv4": 37.2, "lv5": 3.5, "mean100": 59.1, "pos": 40.7, "neg": 33.5, "small": false}, {"dim": "가족구성", "group": "3세대가구", "item": "speed", "n": 76, "lv1": 38.3, "lv2": 16.1, "lv3": 15.2, "lv4": 26.9, "lv5": 3.4, "mean100": 48.2, "pos": 30.3, "neg": 54.4, "small": true}, {"dim": "가족구성", "group": "기타", "item": "speed", "n": 5, "lv1": 20.7, "lv2": 0.0, "lv3": 29.6, "lv4": 49.7, "lv5": 0.0, "mean100": 61.7, "pos": 49.7, "neg": 20.7, "small": true}, {"dim": "지역", "group": "서울", "item": "speed", "n": 1125, "lv1": 9.4, "lv2": 18.4, "lv3": 26.6, "lv4": 42.9, "lv5": 2.7, "mean100": 62.2, "pos": 45.6, "neg": 27.8, "small": false}, {"dim": "지역", "group": "인천/경기", "item": "speed", "n": 1920, "lv1": 20.5, "lv2": 15.6, "lv3": 25.4, "lv4": 34.5, "lv5": 4.0, "mean100": 57.2, "pos": 38.5, "neg": 36.1, "small": false}, {"dim": "지역", "group": "대전/충청/세종", "item": "speed", "n": 624, "lv1": 26.2, "lv2": 22.6, "lv3": 22.6, "lv4": 24.9, "lv5": 3.8, "mean100": 51.5, "pos": 28.7, "neg": 48.8, "small": false}, {"dim": "지역", "group": "광주/전라/제주", "item": "speed", "n": 594, "lv1": 13.1, "lv2": 24.5, "lv3": 31.7, "lv4": 29.6, "lv5": 1.1, "mean100": 56.3, "pos": 30.700000000000003, "neg": 37.6, "small": false}, {"dim": "지역", "group": "부산/울산/경남", "item": "speed", "n": 859, "lv1": 24.3, "lv2": 21.5, "lv3": 23.3, "lv4": 27.9, "lv5": 3.0, "mean100": 52.8, "pos": 30.9, "neg": 45.8, "small": false}, {"dim": "지역", "group": "대구/경북", "item": "speed", "n": 543, "lv1": 31.4, "lv2": 17.8, "lv3": 25.6, "lv4": 22.7, "lv5": 2.4, "mean100": 49.4, "pos": 25.1, "neg": 49.2, "small": false}, {"dim": "지역", "group": "강원", "item": "speed", "n": 178, "lv1": 21.6, "lv2": 41.0, "lv3": 24.5, "lv4": 11.3, "lv5": 1.5, "mean100": 46.0, "pos": 12.8, "neg": 62.6, "small": false}, {"dim": "직업", "group": "사무직", "item": "speed", "n": 1445, "lv1": 15.5, "lv2": 15.8, "lv3": 26.7, "lv4": 38.0, "lv5": 4.1, "mean100": 59.9, "pos": 42.1, "neg": 31.3, "small": false}, {"dim": "직업", "group": "서비스/판매직", "item": "speed", "n": 1704, "lv1": 17.0, "lv2": 17.8, "lv3": 27.2, "lv4": 35.2, "lv5": 2.7, "mean100": 57.8, "pos": 37.900000000000006, "neg": 34.8, "small": false}, {"dim": "직업", "group": "생산직", "item": "speed", "n": 823, "lv1": 28.0, "lv2": 23.3, "lv3": 24.0, "lv4": 22.5, "lv5": 2.2, "mean100": 49.5, "pos": 24.7, "neg": 51.3, "small": false}, {"dim": "직업", "group": "학생", "item": "speed", "n": 720, "lv1": 13.0, "lv2": 17.2, "lv3": 24.6, "lv4": 39.8, "lv5": 5.4, "mean100": 61.5, "pos": 45.2, "neg": 30.2, "small": false}, {"dim": "직업", "group": "주부", "item": "speed", "n": 788, "lv1": 26.6, "lv2": 26.5, "lv3": 24.1, "lv4": 22.0, "lv5": 0.9, "mean100": 48.8, "pos": 22.9, "neg": 53.1, "small": false}, {"dim": "직업", "group": "기타", "item": "speed", "n": 25, "lv1": 25.9, "lv2": 29.0, "lv3": 29.7, "lv4": 15.4, "lv5": 0.0, "mean100": 46.9, "pos": 15.4, "neg": 54.9, "small": true}, {"dim": "직업", "group": "무직", "item": "speed", "n": 336, "lv1": 30.8, "lv2": 25.3, "lv3": 22.9, "lv4": 18.1, "lv5": 3.0, "mean100": 47.4, "pos": 21.1, "neg": 56.1, "small": false}, {"dim": "학력", "group": "초/중/고등학생", "item": "speed", "n": 524, "lv1": 11.8, "lv2": 17.9, "lv3": 25.8, "lv4": 39.0, "lv5": 5.5, "mean100": 61.7, "pos": 44.5, "neg": 29.7, "small": false}, {"dim": "학력", "group": "대학생/대학원생", "item": "speed", "n": 208, "lv1": 14.8, "lv2": 16.1, "lv3": 21.6, "lv4": 42.9, "lv5": 4.6, "mean100": 61.3, "pos": 47.5, "neg": 30.9, "small": false}, {"dim": "학력", "group": "고졸이하", "item": "speed", "n": 2405, "lv1": 28.0, "lv2": 23.6, "lv3": 23.7, "lv4": 23.0, "lv5": 1.8, "mean100": 49.4, "pos": 24.8, "neg": 51.6, "small": false}, {"dim": "학력", "group": "대졸이상", "item": "speed", "n": 2704, "lv1": 14.5, "lv2": 16.8, "lv3": 27.7, "lv4": 37.4, "lv5": 3.6, "mean100": 59.8, "pos": 41.0, "neg": 31.3, "small": false}, {"dim": "가구소득", "group": "100만원 미만", "item": "speed", "n": 166, "lv1": 46.1, "lv2": 18.1, "lv3": 20.7, "lv4": 13.8, "lv5": 1.2, "mean100": 41.2, "pos": 15.0, "neg": 64.2, "small": false}, {"dim": "가구소득", "group": "100-199만원", "item": "speed", "n": 332, "lv1": 41.9, "lv2": 27.9, "lv3": 17.8, "lv4": 11.8, "lv5": 0.5, "mean100": 40.2, "pos": 12.3, "neg": 69.8, "small": false}, {"dim": "가구소득", "group": "200-299만원", "item": "speed", "n": 744, "lv1": 24.4, "lv2": 19.1, "lv3": 27.8, "lv4": 26.8, "lv5": 1.9, "mean100": 52.6, "pos": 28.7, "neg": 43.5, "small": false}, {"dim": "가구소득", "group": "300-399만원", "item": "speed", "n": 1004, "lv1": 20.0, "lv2": 20.2, "lv3": 28.4, "lv4": 29.2, "lv5": 2.2, "mean100": 54.7, "pos": 31.4, "neg": 40.2, "small": false}, {"dim": "가구소득", "group": "400-499만원", "item": "speed", "n": 1081, "lv1": 14.6, "lv2": 21.2, "lv3": 26.9, "lv4": 33.8, "lv5": 3.6, "mean100": 58.1, "pos": 37.4, "neg": 35.8, "small": false}, {"dim": "가구소득", "group": "500-599만원", "item": "speed", "n": 1063, "lv1": 12.5, "lv2": 19.9, "lv3": 26.9, "lv4": 36.5, "lv5": 4.3, "mean100": 60.0, "pos": 40.8, "neg": 32.4, "small": false}, {"dim": "가구소득", "group": "600-699만원", "item": "speed", "n": 705, "lv1": 19.3, "lv2": 17.3, "lv3": 23.1, "lv4": 37.7, "lv5": 2.7, "mean100": 57.4, "pos": 40.400000000000006, "neg": 36.6, "small": false}, {"dim": "가구소득", "group": "700만원 이상", "item": "speed", "n": 747, "lv1": 17.9, "lv2": 15.6, "lv3": 23.4, "lv4": 38.2, "lv5": 4.9, "mean100": 59.3, "pos": 43.1, "neg": 33.5, "small": false}, {"dim": "전체", "group": "소계", "item": "skip", "n": 5841, "lv1": 15.7, "lv2": 15.9, "lv3": 28.6, "lv4": 33.8, "lv5": 6.0, "mean100": 59.7, "pos": 39.8, "neg": 31.6, "small": false}, {"dim": "성별", "group": "남성", "item": "skip", "n": 2946, "lv1": 15.3, "lv2": 15.9, "lv3": 28.9, "lv4": 33.7, "lv5": 6.2, "mean100": 59.9, "pos": 39.900000000000006, "neg": 31.200000000000003, "small": false}, {"dim": "성별", "group": "여성", "item": "skip", "n": 2895, "lv1": 16.1, "lv2": 15.8, "lv3": 28.3, "lv4": 33.9, "lv5": 5.9, "mean100": 59.5, "pos": 39.8, "neg": 31.9, "small": false}, {"dim": "연령", "group": "10대", "item": "skip", "n": 593, "lv1": 11.2, "lv2": 12.6, "lv3": 24.7, "lv4": 41.3, "lv5": 10.2, "mean100": 65.3, "pos": 51.5, "neg": 23.8, "small": false}, {"dim": "연령", "group": "20대", "item": "skip", "n": 806, "lv1": 8.5, "lv2": 11.2, "lv3": 23.5, "lv4": 45.9, "lv5": 10.9, "mean100": 67.9, "pos": 56.8, "neg": 19.7, "small": false}, {"dim": "연령", "group": "30대", "item": "skip", "n": 886, "lv1": 9.6, "lv2": 10.6, "lv3": 27.8, "lv4": 42.7, "lv5": 9.2, "mean100": 66.3, "pos": 51.900000000000006, "neg": 20.2, "small": false}, {"dim": "연령", "group": "40대", "item": "skip", "n": 1017, "lv1": 13.5, "lv2": 12.6, "lv3": 31.1, "lv4": 38.6, "lv5": 4.2, "mean100": 61.5, "pos": 42.8, "neg": 26.1, "small": false}, {"dim": "연령", "group": "50대", "item": "skip", "n": 1112, "lv1": 15.1, "lv2": 19.8, "lv3": 31.7, "lv4": 29.6, "lv5": 3.8, "mean100": 57.5, "pos": 33.4, "neg": 34.9, "small": false}, {"dim": "연령", "group": "60대", "item": "skip", "n": 900, "lv1": 22.9, "lv2": 23.7, "lv3": 27.5, "lv4": 22.9, "lv5": 3.1, "mean100": 51.9, "pos": 26.0, "neg": 46.6, "small": false}, {"dim": "연령", "group": "70세 이상", "item": "skip", "n": 527, "lv1": 35.3, "lv2": 20.2, "lv3": 32.9, "lv4": 10.0, "lv5": 1.5, "mean100": 44.4, "pos": 11.5, "neg": 55.5, "small": false}, {"dim": "가족구성", "group": "독신가구", "item": "skip", "n": 976, "lv1": 20.2, "lv2": 16.4, "lv3": 24.5, "lv4": 33.5, "lv5": 5.5, "mean100": 57.5, "pos": 39.0, "neg": 36.6, "small": false}, {"dim": "가족구성", "group": "1세대가구", "item": "skip", "n": 1601, "lv1": 20.3, "lv2": 20.3, "lv3": 31.2, "lv4": 24.5, "lv5": 3.7, "mean100": 54.2, "pos": 28.2, "neg": 40.6, "small": false}, {"dim": "가족구성", "group": "2세대가구", "item": "skip", "n": 3184, "lv1": 11.8, "lv2": 13.6, "lv3": 28.7, "lv4": 38.7, "lv5": 7.2, "mean100": 63.2, "pos": 45.900000000000006, "neg": 25.4, "small": false}, {"dim": "가족구성", "group": "3세대가구", "item": "skip", "n": 76, "lv1": 26.0, "lv2": 12.3, "lv3": 23.4, "lv4": 27.3, "lv5": 11.0, "mean100": 57.0, "pos": 38.3, "neg": 38.3, "small": true}, {"dim": "가족구성", "group": "기타", "item": "skip", "n": 5, "lv1": 0.0, "lv2": 0.0, "lv3": 62.0, "lv4": 38.0, "lv5": 0.0, "mean100": 67.6, "pos": 38.0, "neg": 0.0, "small": true}, {"dim": "지역", "group": "서울", "item": "skip", "n": 1125, "lv1": 8.4, "lv2": 17.4, "lv3": 24.7, "lv4": 43.1, "lv5": 6.4, "mean100": 64.3, "pos": 49.5, "neg": 25.8, "small": false}, {"dim": "지역", "group": "인천/경기", "item": "skip", "n": 1920, "lv1": 14.5, "lv2": 12.4, "lv3": 31.3, "lv4": 34.8, "lv5": 7.0, "mean100": 61.5, "pos": 41.8, "neg": 26.9, "small": false}, {"dim": "지역", "group": "대전/충청/세종", "item": "skip", "n": 624, "lv1": 18.7, "lv2": 16.0, "lv3": 27.6, "lv4": 30.9, "lv5": 6.8, "mean100": 58.2, "pos": 37.7, "neg": 34.7, "small": false}, {"dim": "지역", "group": "광주/전라/제주", "item": "skip", "n": 594, "lv1": 9.2, "lv2": 16.1, "lv3": 37.5, "lv4": 33.0, "lv5": 4.1, "mean100": 61.4, "pos": 37.1, "neg": 25.3, "small": false}, {"dim": "지역", "group": "부산/울산/경남", "item": "skip", "n": 859, "lv1": 21.7, "lv2": 18.5, "lv3": 27.0, "lv4": 26.7, "lv5": 6.2, "mean100": 55.4, "pos": 32.9, "neg": 40.2, "small": false}, {"dim": "지역", "group": "대구/경북", "item": "skip", "n": 543, "lv1": 27.9, "lv2": 16.0, "lv3": 21.6, "lv4": 31.3, "lv5": 3.3, "mean100": 53.2, "pos": 34.6, "neg": 43.9, "small": false}, {"dim": "지역", "group": "강원", "item": "skip", "n": 178, "lv1": 19.9, "lv2": 29.0, "lv3": 28.0, "lv4": 18.5, "lv5": 4.6, "mean100": 51.8, "pos": 23.1, "neg": 48.9, "small": false}, {"dim": "직업", "group": "사무직", "item": "skip", "n": 1445, "lv1": 11.6, "lv2": 12.2, "lv3": 30.2, "lv4": 39.0, "lv5": 7.0, "mean100": 63.5, "pos": 46.0, "neg": 23.8, "small": false}, {"dim": "직업", "group": "서비스/판매직", "item": "skip", "n": 1704, "lv1": 13.3, "lv2": 15.1, "lv3": 31.5, "lv4": 33.9, "lv5": 6.1, "mean100": 60.9, "pos": 40.0, "neg": 28.4, "small": false}, {"dim": "직업", "group": "생산직", "item": "skip", "n": 823, "lv1": 20.8, "lv2": 19.9, "lv3": 27.8, "lv4": 27.7, "lv5": 3.8, "mean100": 54.8, "pos": 31.5, "neg": 40.7, "small": false}, {"dim": "직업", "group": "학생", "item": "skip", "n": 720, "lv1": 9.9, "lv2": 12.3, "lv3": 25.0, "lv4": 42.8, "lv5": 10.0, "mean100": 66.1, "pos": 52.8, "neg": 22.200000000000003, "small": false}, {"dim": "직업", "group": "주부", "item": "skip", "n": 788, "lv1": 23.0, "lv2": 20.1, "lv3": 27.0, "lv4": 26.5, "lv5": 3.5, "mean100": 53.5, "pos": 30.0, "neg": 43.1, "small": false}, {"dim": "직업", "group": "기타", "item": "skip", "n": 25, "lv1": 23.2, "lv2": 27.5, "lv3": 19.8, "lv4": 19.9, "lv5": 9.6, "mean100": 53.0, "pos": 29.5, "neg": 50.7, "small": true}, {"dim": "직업", "group": "무직", "item": "skip", "n": 336, "lv1": 27.8, "lv2": 22.6, "lv3": 21.5, "lv4": 24.2, "lv5": 3.9, "mean100": 50.8, "pos": 28.1, "neg": 50.400000000000006, "small": false}, {"dim": "학력", "group": "초/중/고등학생", "item": "skip", "n": 524, "lv1": 10.3, "lv2": 13.1, "lv3": 24.5, "lv4": 40.5, "lv5": 11.6, "mean100": 66.0, "pos": 52.1, "neg": 23.4, "small": false}, {"dim": "학력", "group": "대학생/대학원생", "item": "skip", "n": 208, "lv1": 8.9, "lv2": 11.7, "lv3": 26.0, "lv4": 48.7, "lv5": 4.8, "mean100": 65.8, "pos": 53.5, "neg": 20.6, "small": false}, {"dim": "학력", "group": "고졸이하", "item": "skip", "n": 2405, "lv1": 22.6, "lv2": 20.0, "lv3": 29.5, "lv4": 23.5, "lv5": 4.4, "mean100": 53.4, "pos": 27.9, "neg": 42.6, "small": false}, {"dim": "학력", "group": "대졸이상", "item": "skip", "n": 2704, "lv1": 11.2, "lv2": 13.1, "lv3": 28.8, "lv4": 40.5, "lv5": 6.5, "mean100": 63.6, "pos": 47.0, "neg": 24.3, "small": false}, {"dim": "가구소득", "group": "100만원 미만", "item": "skip", "n": 166, "lv1": 43.3, "lv2": 17.1, "lv3": 16.5, "lv4": 21.2, "lv5": 1.8, "mean100": 44.2, "pos": 23.0, "neg": 60.4, "small": false}, {"dim": "가구소득", "group": "100-199만원", "item": "skip", "n": 332, "lv1": 34.1, "lv2": 23.2, "lv3": 25.5, "lv4": 15.2, "lv5": 2.0, "mean100": 45.5, "pos": 17.2, "neg": 57.3, "small": false}, {"dim": "가구소득", "group": "200-299만원", "item": "skip", "n": 744, "lv1": 17.9, "lv2": 18.5, "lv3": 28.3, "lv4": 30.9, "lv5": 4.3, "mean100": 57.0, "pos": 35.2, "neg": 36.4, "small": false}, {"dim": "가구소득", "group": "300-399만원", "item": "skip", "n": 1004, "lv1": 16.0, "lv2": 18.8, "lv3": 27.4, "lv4": 32.9, "lv5": 5.0, "mean100": 58.4, "pos": 37.9, "neg": 34.8, "small": false}, {"dim": "가구소득", "group": "400-499만원", "item": "skip", "n": 1081, "lv1": 13.2, "lv2": 14.0, "lv3": 32.3, "lv4": 35.2, "lv5": 5.2, "mean100": 61.1, "pos": 40.400000000000006, "neg": 27.2, "small": false}, {"dim": "가구소득", "group": "500-599만원", "item": "skip", "n": 1063, "lv1": 11.0, "lv2": 14.3, "lv3": 31.0, "lv4": 36.1, "lv5": 7.5, "mean100": 63.0, "pos": 43.6, "neg": 25.3, "small": false}, {"dim": "가구소득", "group": "600-699만원", "item": "skip", "n": 705, "lv1": 14.5, "lv2": 13.1, "lv3": 29.3, "lv4": 38.2, "lv5": 4.9, "mean100": 61.2, "pos": 43.1, "neg": 27.6, "small": false}, {"dim": "가구소득", "group": "700만원 이상", "item": "skip", "n": 747, "lv1": 10.2, "lv2": 13.2, "lv3": 25.3, "lv4": 39.3, "lv5": 11.9, "mean100": 65.9, "pos": 51.2, "neg": 23.4, "small": false}, {"dim": "전체", "group": "소계", "item": "ai", "n": 6554, "lv1": 5.7, "lv2": 17.9, "lv3": 36.2, "lv4": 35.2, "lv5": 5.0, "mean100": 63.2, "pos": 40.2, "neg": 23.6, "small": false}, {"dim": "성별", "group": "남성", "item": "ai", "n": 3255, "lv1": 5.9, "lv2": 18.3, "lv3": 34.5, "lv4": 36.4, "lv5": 4.8, "mean100": 63.2, "pos": 41.2, "neg": 24.200000000000003, "small": false}, {"dim": "성별", "group": "여성", "item": "ai", "n": 3299, "lv1": 5.4, "lv2": 17.6, "lv3": 37.8, "lv4": 34.0, "lv5": 5.2, "mean100": 63.2, "pos": 39.2, "neg": 23.0, "small": false}, {"dim": "연령", "group": "10대", "item": "ai", "n": 627, "lv1": 2.2, "lv2": 14.1, "lv3": 30.5, "lv4": 44.4, "lv5": 8.8, "mean100": 68.7, "pos": 53.2, "neg": 16.3, "small": false}, {"dim": "연령", "group": "20대", "item": "ai", "n": 814, "lv1": 4.1, "lv2": 17.9, "lv3": 32.9, "lv4": 37.4, "lv5": 7.7, "mean100": 65.3, "pos": 45.1, "neg": 22.0, "small": false}, {"dim": "연령", "group": "30대", "item": "ai", "n": 896, "lv1": 6.2, "lv2": 14.4, "lv3": 31.2, "lv4": 42.3, "lv5": 5.9, "mean100": 65.5, "pos": 48.2, "neg": 20.6, "small": false}, {"dim": "연령", "group": "40대", "item": "ai", "n": 1049, "lv1": 4.9, "lv2": 15.4, "lv3": 34.8, "lv4": 39.9, "lv5": 5.0, "mean100": 65.0, "pos": 44.9, "neg": 20.3, "small": false}, {"dim": "연령", "group": "50대", "item": "ai", "n": 1187, "lv1": 4.9, "lv2": 17.1, "lv3": 37.9, "lv4": 35.6, "lv5": 4.6, "mean100": 63.6, "pos": 40.2, "neg": 22.0, "small": false}, {"dim": "연령", "group": "60대", "item": "ai", "n": 1070, "lv1": 6.2, "lv2": 21.9, "lv3": 40.7, "lv4": 28.8, "lv5": 2.4, "mean100": 59.9, "pos": 31.2, "neg": 28.1, "small": false}, {"dim": "연령", "group": "70세 이상", "item": "ai", "n": 911, "lv1": 10.2, "lv2": 23.6, "lv3": 41.8, "lv4": 21.6, "lv5": 2.8, "mean100": 56.6, "pos": 24.4, "neg": 33.8, "small": false}, {"dim": "가족구성", "group": "독신가구", "item": "ai", "n": 1230, "lv1": 7.3, "lv2": 19.9, "lv3": 37.6, "lv4": 30.9, "lv5": 4.2, "mean100": 61.0, "pos": 35.1, "neg": 27.2, "small": false}, {"dim": "가족구성", "group": "1세대가구", "item": "ai", "n": 1878, "lv1": 6.4, "lv2": 18.5, "lv3": 40.2, "lv4": 31.3, "lv5": 3.5, "mean100": 61.4, "pos": 34.8, "neg": 24.9, "small": false}, {"dim": "가족구성", "group": "2세대가구", "item": "ai", "n": 3361, "lv1": 4.6, "lv2": 17.0, "lv3": 33.3, "lv4": 39.0, "lv5": 6.2, "mean100": 65.0, "pos": 45.2, "neg": 21.6, "small": false}, {"dim": "가족구성", "group": "3세대가구", "item": "ai", "n": 79, "lv1": 7.5, "lv2": 13.0, "lv3": 39.7, "lv4": 35.0, "lv5": 4.8, "mean100": 63.3, "pos": 39.8, "neg": 20.5, "small": true}, {"dim": "가족구성", "group": "기타", "item": "ai", "n": 5, "lv1": 20.7, "lv2": 27.6, "lv3": 7.9, "lv4": 43.8, "lv5": 0.0, "mean100": 55.0, "pos": 43.8, "neg": 48.3, "small": true}, {"dim": "지역", "group": "서울", "item": "ai", "n": 1194, "lv1": 4.0, "lv2": 21.8, "lv3": 35.2, "lv4": 35.5, "lv5": 3.6, "mean100": 62.6, "pos": 39.1, "neg": 25.8, "small": false}, {"dim": "지역", "group": "인천/경기", "item": "ai", "n": 2113, "lv1": 6.2, "lv2": 16.7, "lv3": 32.7, "lv4": 39.4, "lv5": 5.0, "mean100": 64.1, "pos": 44.4, "neg": 22.9, "small": false}, {"dim": "지역", "group": "대전/충청/세종", "item": "ai", "n": 719, "lv1": 3.9, "lv2": 19.1, "lv3": 41.0, "lv4": 31.8, "lv5": 4.2, "mean100": 62.7, "pos": 36.0, "neg": 23.0, "small": false}, {"dim": "지역", "group": "광주/전라/제주", "item": "ai", "n": 720, "lv1": 7.0, "lv2": 13.4, "lv3": 40.8, "lv4": 34.1, "lv5": 4.7, "mean100": 63.2, "pos": 38.8, "neg": 20.4, "small": false}, {"dim": "지역", "group": "부산/울산/경남", "item": "ai", "n": 976, "lv1": 6.7, "lv2": 19.4, "lv3": 32.6, "lv4": 34.5, "lv5": 6.9, "mean100": 63.1, "pos": 41.4, "neg": 26.1, "small": false}, {"dim": "지역", "group": "대구/경북", "item": "ai", "n": 635, "lv1": 5.5, "lv2": 18.6, "lv3": 43.9, "lv4": 26.0, "lv5": 6.0, "mean100": 61.7, "pos": 32.0, "neg": 24.1, "small": false}, {"dim": "지역", "group": "강원", "item": "ai", "n": 197, "lv1": 6.8, "lv2": 11.9, "lv3": 36.8, "lv4": 38.9, "lv5": 5.6, "mean100": 64.9, "pos": 44.5, "neg": 18.7, "small": false}, {"dim": "직업", "group": "사무직", "item": "ai", "n": 1475, "lv1": 5.4, "lv2": 16.4, "lv3": 30.2, "lv4": 41.4, "lv5": 6.6, "mean100": 65.5, "pos": 48.0, "neg": 21.8, "small": false}, {"dim": "직업", "group": "서비스/판매직", "item": "ai", "n": 1846, "lv1": 3.7, "lv2": 17.5, "lv3": 37.8, "lv4": 36.2, "lv5": 4.7, "mean100": 64.1, "pos": 40.900000000000006, "neg": 21.2, "small": false}, {"dim": "직업", "group": "생산직", "item": "ai", "n": 997, "lv1": 8.4, "lv2": 16.0, "lv3": 38.3, "lv4": 33.3, "lv5": 4.1, "mean100": 61.7, "pos": 37.4, "neg": 24.4, "small": false}, {"dim": "직업", "group": "학생", "item": "ai", "n": 755, "lv1": 3.1, "lv2": 13.7, "lv3": 31.3, "lv4": 43.4, "lv5": 8.5, "mean100": 68.1, "pos": 51.9, "neg": 16.8, "small": false}, {"dim": "직업", "group": "주부", "item": "ai", "n": 1007, "lv1": 6.8, "lv2": 21.9, "lv3": 45.0, "lv4": 23.3, "lv5": 3.0, "mean100": 58.8, "pos": 26.3, "neg": 28.7, "small": false}, {"dim": "직업", "group": "기타", "item": "ai", "n": 26, "lv1": 6.2, "lv2": 18.7, "lv3": 43.2, "lv4": 20.0, "lv5": 11.9, "mean100": 62.6, "pos": 31.9, "neg": 24.9, "small": true}, {"dim": "직업", "group": "무직", "item": "ai", "n": 449, "lv1": 10.4, "lv2": 27.1, "lv3": 32.1, "lv4": 29.1, "lv5": 1.3, "mean100": 56.8, "pos": 30.4, "neg": 37.5, "small": false}, {"dim": "학력", "group": "초/중/고등학생", "item": "ai", "n": 558, "lv1": 2.3, "lv2": 14.0, "lv3": 31.6, "lv4": 43.6, "lv5": 8.6, "mean100": 68.4, "pos": 52.2, "neg": 16.3, "small": false}, {"dim": "학력", "group": "대학생/대학원생", "item": "ai", "n": 209, "lv1": 4.9, "lv2": 14.6, "lv3": 29.5, "lv4": 43.1, "lv5": 7.9, "mean100": 66.9, "pos": 51.0, "neg": 19.5, "small": false}, {"dim": "학력", "group": "고졸이하", "item": "ai", "n": 3005, "lv1": 6.9, "lv2": 20.3, "lv3": 40.0, "lv4": 29.5, "lv5": 3.3, "mean100": 60.4, "pos": 32.8, "neg": 27.200000000000003, "small": false}, {"dim": "학력", "group": "대졸이상", "item": "ai", "n": 2781, "lv1": 5.1, "lv2": 16.5, "lv3": 33.4, "lv4": 39.1, "lv5": 5.9, "mean100": 64.9, "pos": 45.0, "neg": 21.6, "small": false}, {"dim": "가구소득", "group": "100만원 미만", "item": "ai", "n": 348, "lv1": 16.1, "lv2": 24.4, "lv3": 45.0, "lv4": 13.8, "lv5": 0.7, "mean100": 51.7, "pos": 14.5, "neg": 40.5, "small": false}, {"dim": "가구소득", "group": "100-199만원", "item": "ai", "n": 478, "lv1": 7.7, "lv2": 21.5, "lv3": 44.1, "lv4": 26.1, "lv5": 0.5, "mean100": 58.0, "pos": 26.6, "neg": 29.2, "small": false}, {"dim": "가구소득", "group": "200-299만원", "item": "ai", "n": 872, "lv1": 4.5, "lv2": 20.7, "lv3": 37.3, "lv4": 34.2, "lv5": 3.3, "mean100": 62.2, "pos": 37.5, "neg": 25.2, "small": false}, {"dim": "가구소득", "group": "300-399만원", "item": "ai", "n": 1091, "lv1": 6.0, "lv2": 16.5, "lv3": 38.0, "lv4": 34.4, "lv5": 5.1, "mean100": 63.2, "pos": 39.5, "neg": 22.5, "small": false}, {"dim": "가구소득", "group": "400-499만원", "item": "ai", "n": 1158, "lv1": 2.7, "lv2": 15.4, "lv3": 37.9, "lv4": 39.0, "lv5": 5.0, "mean100": 65.6, "pos": 44.0, "neg": 18.1, "small": false}, {"dim": "가구소득", "group": "500-599만원", "item": "ai", "n": 1096, "lv1": 4.8, "lv2": 14.5, "lv3": 35.2, "lv4": 38.4, "lv5": 7.3, "mean100": 65.8, "pos": 45.7, "neg": 19.3, "small": false}, {"dim": "가구소득", "group": "600-699만원", "item": "ai", "n": 720, "lv1": 5.4, "lv2": 16.7, "lv3": 32.5, "lv4": 39.3, "lv5": 6.0, "mean100": 64.8, "pos": 45.3, "neg": 22.1, "small": false}, {"dim": "가구소득", "group": "700만원 이상", "item": "ai", "n": 791, "lv1": 6.5, "lv2": 21.6, "lv3": 25.7, "lv4": 38.8, "lv5": 7.4, "mean100": 63.8, "pos": 46.2, "neg": 28.1, "small": false}], "spread": [{"dim": "가구소득", "item": "ai", "hi": "500-599만원", "hi_v": 65.8, "lo": "100만원 미만", "lo_v": 51.7, "gap": 14.1}, {"dim": "가구소득", "item": "skip", "hi": "700만원 이상", "hi_v": 65.9, "lo": "100만원 미만", "lo_v": 44.2, "gap": 21.7}, {"dim": "가구소득", "item": "speed", "hi": "500-599만원", "hi_v": 60.0, "lo": "100-199만원", "lo_v": 40.2, "gap": 19.8}, {"dim": "가족구성", "item": "ai", "hi": "2세대가구", "hi_v": 65.0, "lo": "독신가구", "lo_v": 61.0, "gap": 4.0}, {"dim": "가족구성", "item": "skip", "hi": "2세대가구", "hi_v": 63.2, "lo": "1세대가구", "lo_v": 54.2, "gap": 9.0}, {"dim": "가족구성", "item": "speed", "hi": "2세대가구", "hi_v": 59.1, "lo": "1세대가구", "lo_v": 50.7, "gap": 8.4}, {"dim": "성별", "item": "ai", "hi": "남성", "hi_v": 63.2, "lo": "남성", "lo_v": 63.2, "gap": 0.0}, {"dim": "성별", "item": "skip", "hi": "남성", "hi_v": 59.9, "lo": "여성", "lo_v": 59.5, "gap": 0.4}, {"dim": "성별", "item": "speed", "hi": "남성", "hi_v": 56.2, "lo": "여성", "lo_v": 55.3, "gap": 0.9}, {"dim": "연령", "item": "ai", "hi": "10대", "hi_v": 68.7, "lo": "70세 이상", "lo_v": 56.6, "gap": 12.1}, {"dim": "연령", "item": "skip", "hi": "20대", "hi_v": 67.9, "lo": "70세 이상", "lo_v": 44.4, "gap": 23.5}, {"dim": "연령", "item": "speed", "hi": "20대", "hi_v": 63.4, "lo": "70세 이상", "lo_v": 44.6, "gap": 18.8}, {"dim": "지역", "item": "ai", "hi": "강원", "hi_v": 64.9, "lo": "대구/경북", "lo_v": 61.7, "gap": 3.2}, {"dim": "지역", "item": "skip", "hi": "서울", "hi_v": 64.3, "lo": "강원", "lo_v": 51.8, "gap": 12.5}, {"dim": "지역", "item": "speed", "hi": "서울", "hi_v": 62.2, "lo": "강원", "lo_v": 46.0, "gap": 16.2}, {"dim": "직업", "item": "ai", "hi": "학생", "hi_v": 68.1, "lo": "무직", "lo_v": 56.8, "gap": 11.3}, {"dim": "직업", "item": "skip", "hi": "학생", "hi_v": 66.1, "lo": "무직", "lo_v": 50.8, "gap": 15.3}, {"dim": "직업", "item": "speed", "hi": "학생", "hi_v": 61.5, "lo": "무직", "lo_v": 47.4, "gap": 14.1}, {"dim": "학력", "item": "ai", "hi": "초/중/고등학생", "hi_v": 68.4, "lo": "고졸이하", "lo_v": 60.4, "gap": 8.0}, {"dim": "학력", "item": "skip", "hi": "초/중/고등학생", "hi_v": 66.0, "lo": "고졸이하", "lo_v": 53.4, "gap": 12.6}, {"dim": "학력", "item": "speed", "hi": "초/중/고등학생", "hi_v": 61.7, "lo": "고졸이하", "lo_v": 49.4, "gap": 12.3}], "chi": [{"dim": "성별", "item": "speed", "chi2": 5.5, "dof": 4, "p": 0.2427819931464889, "cramers_v": 0.031}, {"dim": "성별", "item": "skip", "chi2": 1.0, "dof": 4, "p": 0.9088629552833858, "cramers_v": 0.013}, {"dim": "성별", "item": "ai", "chi2": 9.4, "dof": 4, "p": 0.05273921874114218, "cramers_v": 0.038}, {"dim": "연령", "item": "speed", "chi2": 527.7, "dof": 24, "p": 2.913297805756564e-96, "cramers_v": 0.15}, {"dim": "연령", "item": "skip", "chi2": 634.1, "dof": 24, "p": 1.7380356663523827e-118, "cramers_v": 0.165}, {"dim": "연령", "item": "ai", "chi2": 274.0, "dof": 24, "p": 2.8209278191568655e-44, "cramers_v": 0.102}, {"dim": "가족구성", "item": "speed", "chi2": 176.2, "dof": 8, "p": 6.356220379987057e-34, "cramers_v": 0.124}, {"dim": "가족구성", "item": "skip", "chi2": 190.9, "dof": 8, "p": 5.159820315094107e-37, "cramers_v": 0.129}, {"dim": "가족구성", "item": "ai", "chi2": 83.2, "dof": 8, "p": 1.0949804510191489e-14, "cramers_v": 0.08}, {"dim": "지역", "item": "speed", "chi2": 334.2, "dof": 24, "p": 2.0233663537304207e-56, "cramers_v": 0.12}, {"dim": "지역", "item": "skip", "chi2": 282.1, "dof": 24, "p": 6.647642598405619e-46, "cramers_v": 0.11}, {"dim": "지역", "item": "ai", "chi2": 114.9, "dof": 24, "p": 7.82687048630349e-14, "cramers_v": 0.066}, {"dim": "직업", "item": "speed", "chi2": 291.2, "dof": 20, "p": 5.070800780937616e-50, "cramers_v": 0.112}, {"dim": "직업", "item": "skip", "chi2": 268.5, "dof": 20, "p": 2.0351279932789802e-45, "cramers_v": 0.107}, {"dim": "직업", "item": "ai", "chi2": 269.1, "dof": 20, "p": 1.5788764957585022e-45, "cramers_v": 0.102}, {"dim": "학력", "item": "speed", "chi2": 310.1, "dof": 12, "p": 3.53324864963547e-59, "cramers_v": 0.133}, {"dim": "학력", "item": "skip", "chi2": 342.6, "dof": 12, "p": 5.175566725597183e-66, "cramers_v": 0.14}, {"dim": "학력", "item": "ai", "chi2": 158.0, "dof": 12, "p": 1.3389849979585336e-27, "cramers_v": 0.09}, {"dim": "가구소득", "item": "speed", "chi2": 356.0, "dof": 28, "p": 1.556666587431518e-58, "cramers_v": 0.123}, {"dim": "가구소득", "item": "skip", "chi2": 367.3, "dof": 28, "p": 8.237292982779817e-61, "cramers_v": 0.125}, {"dim": "가구소득", "item": "ai", "chi2": 305.8, "dof": 28, "p": 1.6911424000400367e-48, "cramers_v": 0.108}], "trend": [{"dim": "연령", "item": "speed", "rho": -0.893, "p": 0.006807187408935393}, {"dim": "연령", "item": "skip", "rho": -0.893, "p": 0.006807187408935393}, {"dim": "연령", "item": "ai", "rho": -0.964, "p": 0.00045414916919416935}, {"dim": "가구소득", "item": "speed", "rho": 0.857, "p": 0.0065300172547152905}, {"dim": "가구소득", "item": "skip", "rho": 0.976, "p": 3.314396026200098e-05}, {"dim": "가구소득", "item": "ai", "rho": 0.786, "p": 0.020815127253525273}], "corr": [{"a": "speed", "b": "skip", "n": 37, "r": 0.981, "p_r": 1.7440184211851938e-26, "rho": 0.979, "p_rho": 6.404533273833219e-26}, {"a": "speed", "b": "ai", "n": 37, "r": 0.841, "p_r": 7.081592361310084e-11, "rho": 0.84, "p_rho": 8.314645103090593e-11}, {"a": "skip", "b": "ai", "n": 37, "r": 0.87, "p_r": 2.755023104021153e-12, "rho": 0.839, "p_rho": 8.729491440609275e-11}], "skip_gt_speed": 36, "n_groups": 37, "age_gap": {"speed": {"young": 62.3, "old": 45.8, "young_pos": 47.6, "old_pos": 17.5}, "skip": {"young": 66.6, "old": 49.1, "young_pos": 53.5, "old_pos": 20.6}, "ai": {"young": 66.3, "old": 58.4, "young_pos": 48.5, "old_pos": 28.1}}, "ai_age_tests": [{"a": "10대", "b": "20대", "neg": {"z": -2.75, "p": 0.005888990225457945}, "pos": {"z": 3.06, "p": 0.0022226534501507923}}, {"a": "20대", "b": "30대", "neg": {"z": 0.71, "p": 0.48026063694142995}, "pos": {"z": -1.28, "p": 0.19911609033133804}}, {"a": "20대", "b": "40대", "neg": {"z": 0.89, "p": 0.3735912278477006}, "pos": {"z": 0.09, "p": 0.9314148801290935}}, {"a": "20대", "b": "50대", "neg": {"z": 0.0, "p": 1.0}, "pos": {"z": 2.18, "p": 0.029494657332144705}}]}, "raw": {"speed": {"title": "OTT 이용 방식 - 배속 기능을 사용한다", "period": "[년] 2025~2025", "source": "「콘텐츠이용행태조사」, 한국콘텐츠진흥원", "downloaded": "2026.10.08 11:08", "header": ["특성별(1)", "특성별(2)", "사례수 (명)", "전혀 그렇지 않다 (%)", "다소 그렇지 않다 (%)", "보통이다 (%)", "약간 그렇다 (%)", "매우 그렇다 (%)", "5점 평균 (점)", "100점 평균 (점)"], "rows": [["전체", "소계", 5841, 19.8, 19.6, 25.7, 31.8, 3.1, 2.8, 55.7], ["성별", "남성", 2946, 19.2, 19.9, 24.9, 33, 3, 2.8, 56.2], [null, "여성", 2895, 20.5, 19.4, 26.5, 30.6, 3.1, 2.8, 55.3], ["연령", "10대", 593, 13.5, 17.6, 25, 38.9, 5.1, 3, 60.9], [null, "20대", 806, 12.5, 13.2, 25.8, 41.9, 6.6, 3.2, 63.4], [null, "30대", 886, 14.2, 13.8, 23, 44.3, 4.8, 3.1, 62.3], [null, "40대", 1017, 16.5, 17.4, 28.5, 34.9, 2.7, 2.9, 58], [null, "50대", 1112, 20.2, 25, 26.1, 27.6, 1.1, 2.6, 52.9], [null, "60대", 900, 30.6, 25.7, 25.2, 17.7, 0.8, 2.3, 46.5], [null, "70세 이상", 527, 34.8, 24.4, 25.1, 14.5, 1.2, 2.2, 44.6], ["가족구성", "독신가구", 976, 25.7, 16.4, 25.1, 29.4, 3.4, 2.7, 53.7], [null, "1세대가구", 1601, 24.5, 24.4, 26.3, 22.8, 2, 2.5, 50.7], [null, "2세대가구", 3184, 15.2, 18.3, 25.7, 37.2, 3.5, 3, 59.1], [null, "3세대가구", 76, 38.3, 16.1, 15.2, 26.9, 3.4, 2.4, 48.2], [null, "기타", 5, 20.7, 0, 29.6, 49.7, 0, 3.1, 61.7], ["지역", "서울", 1125, 9.4, 18.4, 26.6, 42.9, 2.7, 3.1, 62.2], [null, "인천/경기", 1920, 20.5, 15.6, 25.4, 34.5, 4, 2.9, 57.2], [null, "대전/충청/세종", 624, 26.2, 22.6, 22.6, 24.9, 3.8, 2.6, 51.5], [null, "광주/전라/제주", 594, 13.1, 24.5, 31.7, 29.6, 1.1, 2.8, 56.3], [null, "부산/울산/경남", 859, 24.3, 21.5, 23.3, 27.9, 3, 2.6, 52.8], [null, "대구/경북", 543, 31.4, 17.8, 25.6, 22.7, 2.4, 2.5, 49.4], [null, "강원", 178, 21.6, 41, 24.5, 11.3, 1.5, 2.3, 46], ["직업", "사무직", 1445, 15.5, 15.8, 26.7, 38, 4.1, 3, 59.9], [null, "서비스/판매직", 1704, 17, 17.8, 27.2, 35.2, 2.7, 2.9, 57.8], [null, "생산직", 823, 28, 23.3, 24, 22.5, 2.2, 2.5, 49.5], [null, "학생", 720, 13, 17.2, 24.6, 39.8, 5.4, 3.1, 61.5], [null, "주부", 788, 26.6, 26.5, 24.1, 22, 0.9, 2.4, 48.8], [null, "기타", 25, 25.9, 29, 29.7, 15.4, 0, 2.3, 46.9], [null, "무직", 336, 30.8, 25.3, 22.9, 18.1, 3, 2.4, 47.4], ["학력", "초/중/고등학생", 524, 11.8, 17.9, 25.8, 39, 5.5, 3.1, 61.7], [null, "대학생/대학원생", 208, 14.8, 16.1, 21.6, 42.9, 4.6, 3.1, 61.3], [null, "고졸이하", 2405, 28, 23.6, 23.7, 23, 1.8, 2.5, 49.4], [null, "대졸이상", 2704, 14.5, 16.8, 27.7, 37.4, 3.6, 3, 59.8], ["가구소득", "100만원 미만", 166, 46.1, 18.1, 20.7, 13.8, 1.2, 2.1, 41.2], [null, "100-199만원", 332, 41.9, 27.9, 17.8, 11.8, 0.5, 2, 40.2], [null, "200-299만원", 744, 24.4, 19.1, 27.8, 26.8, 1.9, 2.6, 52.6], [null, "300-399만원", 1004, 20, 20.2, 28.4, 29.2, 2.2, 2.7, 54.7], [null, "400-499만원", 1081, 14.6, 21.2, 26.9, 33.8, 3.6, 2.9, 58.1], [null, "500-599만원", 1063, 12.5, 19.9, 26.9, 36.5, 4.3, 3, 60], [null, "600-699만원", 705, 19.3, 17.3, 23.1, 37.7, 2.7, 2.9, 57.4], [null, "700만원 이상", 747, 17.9, 15.6, 23.4, 38.2, 4.9, 3, 59.3]]}, "skip": {"title": "OTT 이용 방식 - 스킵(구간 이동) 기능을 사용한다", "period": "[년] 2025~2025", "source": "「콘텐츠이용행태조사」, 한국콘텐츠진흥원", "downloaded": "2026.10.08 11:09", "header": ["특성별(1)", "특성별(2)", "사례수 (명)", "전혀 그렇지 않다 (%)", "다소 그렇지 않다 (%)", "보통이다 (%)", "약간 그렇다 (%)", "매우 그렇다 (%)", "5점 평균 (점)", "100점 평균 (점)"], "rows": [["전체", "소계", 5841, 15.7, 15.9, 28.6, 33.8, 6, 3, 59.7], ["성별", "남성", 2946, 15.3, 15.9, 28.9, 33.7, 6.2, 3, 59.9], [null, "여성", 2895, 16.1, 15.8, 28.3, 33.9, 5.9, 3, 59.5], ["연령", "10대", 593, 11.2, 12.6, 24.7, 41.3, 10.2, 3.3, 65.3], [null, "20대", 806, 8.5, 11.2, 23.5, 45.9, 10.9, 3.4, 67.9], [null, "30대", 886, 9.6, 10.6, 27.8, 42.7, 9.2, 3.3, 66.3], [null, "40대", 1017, 13.5, 12.6, 31.1, 38.6, 4.2, 3.1, 61.5], [null, "50대", 1112, 15.1, 19.8, 31.7, 29.6, 3.8, 2.9, 57.5], [null, "60대", 900, 22.9, 23.7, 27.5, 22.9, 3.1, 2.6, 51.9], [null, "70세 이상", 527, 35.3, 20.2, 32.9, 10, 1.5, 2.2, 44.4], ["가족구성", "독신가구", 976, 20.2, 16.4, 24.5, 33.5, 5.5, 2.9, 57.5], [null, "1세대가구", 1601, 20.3, 20.3, 31.2, 24.5, 3.7, 2.7, 54.2], [null, "2세대가구", 3184, 11.8, 13.6, 28.7, 38.7, 7.2, 3.2, 63.2], [null, "3세대가구", 76, 26, 12.3, 23.4, 27.3, 11, 2.9, 57], [null, "기타", 5, 0, 0, 62, 38, 0, 3.4, 67.6], ["지역", "서울", 1125, 8.4, 17.4, 24.7, 43.1, 6.4, 3.2, 64.3], [null, "인천/경기", 1920, 14.5, 12.4, 31.3, 34.8, 7, 3.1, 61.5], [null, "대전/충청/세종", 624, 18.7, 16, 27.6, 30.9, 6.8, 2.9, 58.2], [null, "광주/전라/제주", 594, 9.2, 16.1, 37.5, 33, 4.1, 3.1, 61.4], [null, "부산/울산/경남", 859, 21.7, 18.5, 27, 26.7, 6.2, 2.8, 55.4], [null, "대구/경북", 543, 27.9, 16, 21.6, 31.3, 3.3, 2.7, 53.2], [null, "강원", 178, 19.9, 29, 28, 18.5, 4.6, 2.6, 51.8], ["직업", "사무직", 1445, 11.6, 12.2, 30.2, 39, 7, 3.2, 63.5], [null, "서비스/판매직", 1704, 13.3, 15.1, 31.5, 33.9, 6.1, 3, 60.9], [null, "생산직", 823, 20.8, 19.9, 27.8, 27.7, 3.8, 2.7, 54.8], [null, "학생", 720, 9.9, 12.3, 25, 42.8, 10, 3.3, 66.1], [null, "주부", 788, 23, 20.1, 27, 26.5, 3.5, 2.7, 53.5], [null, "기타", 25, 23.2, 27.5, 19.8, 19.9, 9.6, 2.7, 53], [null, "무직", 336, 27.8, 22.6, 21.5, 24.2, 3.9, 2.5, 50.8], ["학력", "초/중/고등학생", 524, 10.3, 13.1, 24.5, 40.5, 11.6, 3.3, 66], [null, "대학생/대학원생", 208, 8.9, 11.7, 26, 48.7, 4.8, 3.3, 65.8], [null, "고졸이하", 2405, 22.6, 20, 29.5, 23.5, 4.4, 2.7, 53.4], [null, "대졸이상", 2704, 11.2, 13.1, 28.8, 40.5, 6.5, 3.2, 63.6], ["가구소득", "100만원 미만", 166, 43.3, 17.1, 16.5, 21.2, 1.8, 2.2, 44.2], [null, "100-199만원", 332, 34.1, 23.2, 25.5, 15.2, 2, 2.3, 45.5], [null, "200-299만원", 744, 17.9, 18.5, 28.3, 30.9, 4.3, 2.9, 57], [null, "300-399만원", 1004, 16, 18.8, 27.4, 32.9, 5, 2.9, 58.4], [null, "400-499만원", 1081, 13.2, 14, 32.3, 35.2, 5.2, 3.1, 61.1], [null, "500-599만원", 1063, 11, 14.3, 31, 36.1, 7.5, 3.1, 63], [null, "600-699만원", 705, 14.5, 13.1, 29.3, 38.2, 4.9, 3.1, 61.2], [null, "700만원 이상", 747, 10.2, 13.2, 25.3, 39.3, 11.9, 3.3, 65.9]]}, "ai": {"title": "AI활용 콘텐츠에 대한 인식 - OTT 콘텐츠", "period": "[년] 2025~2025", "source": "「콘텐츠이용행태조사」, 한국콘텐츠진흥원", "downloaded": "2026.10.08 11:08", "header": ["특성별(1)", "특성별(2)", "사례수 (명)", "매우 부정적 (%)", "부정적 (%)", "보통 (%)", "긍정적 (%)", "매우 긍정적 (%)", "5점 평균 (점)", "100점 평균 (점)"], "rows": [["전체", "소계", 6554, 5.7, 17.9, 36.2, 35.2, 5, 3.2, 63.2], ["성별", "남성", 3255, 5.9, 18.3, 34.5, 36.4, 4.8, 3.2, 63.2], [null, "여성", 3299, 5.4, 17.6, 37.8, 34, 5.2, 3.2, 63.2], ["연령", "10대", 627, 2.2, 14.1, 30.5, 44.4, 8.8, 3.4, 68.7], [null, "20대", 814, 4.1, 17.9, 32.9, 37.4, 7.7, 3.3, 65.3], [null, "30대", 896, 6.2, 14.4, 31.2, 42.3, 5.9, 3.3, 65.5], [null, "40대", 1049, 4.9, 15.4, 34.8, 39.9, 5, 3.2, 65], [null, "50대", 1187, 4.9, 17.1, 37.9, 35.6, 4.6, 3.2, 63.6], [null, "60대", 1070, 6.2, 21.9, 40.7, 28.8, 2.4, 3, 59.9], [null, "70세 이상", 911, 10.2, 23.6, 41.8, 21.6, 2.8, 2.8, 56.6], ["가족구성", "독신가구", 1230, 7.3, 19.9, 37.6, 30.9, 4.2, 3, 61], [null, "1세대가구", 1878, 6.4, 18.5, 40.2, 31.3, 3.5, 3.1, 61.4], [null, "2세대가구", 3361, 4.6, 17, 33.3, 39, 6.2, 3.3, 65], [null, "3세대가구", 79, 7.5, 13, 39.7, 35, 4.8, 3.2, 63.3], [null, "기타", 5, 20.7, 27.6, 7.9, 43.8, 0, 2.7, 55], ["지역", "서울", 1194, 4, 21.8, 35.2, 35.5, 3.6, 3.1, 62.6], [null, "인천/경기", 2113, 6.2, 16.7, 32.7, 39.4, 5, 3.2, 64.1], [null, "대전/충청/세종", 719, 3.9, 19.1, 41, 31.8, 4.2, 3.1, 62.7], [null, "광주/전라/제주", 720, 7, 13.4, 40.8, 34.1, 4.7, 3.2, 63.2], [null, "부산/울산/경남", 976, 6.7, 19.4, 32.6, 34.5, 6.9, 3.2, 63.1], [null, "대구/경북", 635, 5.5, 18.6, 43.9, 26, 6, 3.1, 61.7], [null, "강원", 197, 6.8, 11.9, 36.8, 38.9, 5.6, 3.2, 64.9], ["직업", "사무직", 1475, 5.4, 16.4, 30.2, 41.4, 6.6, 3.3, 65.5], [null, "서비스/판매직", 1846, 3.7, 17.5, 37.8, 36.2, 4.7, 3.2, 64.1], [null, "생산직", 997, 8.4, 16, 38.3, 33.3, 4.1, 3.1, 61.7], [null, "학생", 755, 3.1, 13.7, 31.3, 43.4, 8.5, 3.4, 68.1], [null, "주부", 1007, 6.8, 21.9, 45, 23.3, 3, 2.9, 58.8], [null, "기타", 26, 6.2, 18.7, 43.2, 20, 11.9, 3.1, 62.6], [null, "무직", 449, 10.4, 27.1, 32.1, 29.1, 1.3, 2.8, 56.8], ["학력", "초/중/고등학생", 558, 2.3, 14, 31.6, 43.6, 8.6, 3.4, 68.4], [null, "대학생/대학원생", 209, 4.9, 14.6, 29.5, 43.1, 7.9, 3.3, 66.9], [null, "고졸이하", 3005, 6.9, 20.3, 40, 29.5, 3.3, 3, 60.4], [null, "대졸이상", 2781, 5.1, 16.5, 33.4, 39.1, 5.9, 3.2, 64.9], ["가구소득", "100만원 미만", 348, 16.1, 24.4, 45, 13.8, 0.7, 2.6, 51.7], [null, "100-199만원", 478, 7.7, 21.5, 44.1, 26.1, 0.5, 2.9, 58], [null, "200-299만원", 872, 4.5, 20.7, 37.3, 34.2, 3.3, 3.1, 62.2], [null, "300-399만원", 1091, 6, 16.5, 38, 34.4, 5.1, 3.2, 63.2], [null, "400-499만원", 1158, 2.7, 15.4, 37.9, 39, 5, 3.3, 65.6], [null, "500-599만원", 1096, 4.8, 14.5, 35.2, 38.4, 7.3, 3.3, 65.8], [null, "600-699만원", 720, 5.4, 16.7, 32.5, 39.3, 6, 3.2, 64.8], [null, "700만원 이상", 791, 6.5, 21.6, 25.7, 38.8, 7.4, 3.2, 63.8]]}}};
+const ITEMS = ["speed", "skip", "ai"];
+const NAME = { speed: "배속 기능", skip: "건너뛰기 기능", ai: "인공지능 콘텐츠" };
+const LONG = { speed: "배속 기능을 사용한다", skip: "건너뛰기(구간 이동) 기능을 사용한다", ai: "인공지능 활용 콘텐츠에 대한 인식" };
+const LV_LABEL = {
+  speed: ["전혀 그렇지 않다", "다소 그렇지 않다", "보통이다", "약간 그렇다", "매우 그렇다"],
+  skip: ["전혀 그렇지 않다", "다소 그렇지 않다", "보통이다", "약간 그렇다", "매우 그렇다"],
+  ai: ["매우 부정적", "부정적", "보통", "긍정적", "매우 긍정적"],
+};
+const LV_LEGEND = ["매우 부정", "다소 부정", "보통", "다소 긍정", "매우 긍정"];
+const LVS = ["lv1", "lv2", "lv3", "lv4", "lv5"];
+const ORDER = {
+  연령: ["10대", "20대", "30대", "40대", "50대", "60대", "70세 이상"],
+  가구소득: ["100만원 미만", "100-199만원", "200-299만원", "300-399만원", "400-499만원", "500-599만원", "600-699만원", "700만원 이상"],
+};
+const DIMS = ["성별", "연령", "가족구성", "지역", "직업", "학력", "가구소득"];
+const R = DATA.results;
+const G = DATA.results.groups;
+
+const row = (dim, group, item) => G.find(r => r.dim === dim && r.group === group && r.item === item);
+const groupsOf = dim => {
+  const seen = [...new Set(G.filter(r => r.dim === dim).map(r => r.group))];
+  return ORDER[dim] || seen;
+};
+const fmt = v => (Math.round(v * 10) / 10).toFixed(1);
+const fmtP = p => p < 0.001 ? "0.001 미만" : p.toFixed(3);
+
+let T = {};
+function readTokens() {
+  const cs = getComputedStyle(document.documentElement);
+  const g = n => cs.getPropertyValue("--" + n).trim();
+  T = {
+    surface: g("surface"), ink: g("ink"), ink2: g("ink-2"), muted: g("muted"), grid: g("grid"), axis: g("axis"),
+    s: { speed: g("s1"), skip: g("s2"), ai: g("s3") },
+    div: [g("d-neg2"), g("d-neg1"), g("d-mid"), g("d-pos1"), g("d-pos2")], ext: g("d-ext-label"),
+    seq: [g("seq-lo"), g("seq-hi")],
+  };
+}
+
+const base = () => ({
+  textStyle: { fontFamily: getComputedStyle(document.body).fontFamily, color: T.ink2 },
+  tooltip: {
+    backgroundColor: T.surface, borderColor: T.axis, textStyle: { color: T.ink, fontSize: 13 },
+    extraCssText: "border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);",
+  },
+  animationDuration: 500,
+});
+const valAxis = (extra = {}) => ({
+  type: "value", axisLine: { show: false }, axisTick: { show: false },
+  splitLine: { lineStyle: { color: T.grid } }, axisLabel: { color: T.muted }, ...extra,
+});
+const catAxis = (data, extra = {}) => ({
+  type: "category", data, axisLine: { lineStyle: { color: T.axis } }, axisTick: { show: false },
+  axisLabel: { color: T.ink2 }, ...extra,
+});
+
+const charts = {};
+function mount(id, option) {
+  const el = document.getElementById(id);
+  if (charts[id]) charts[id].dispose();
+  charts[id] = echarts.init(el, null, { renderer: "svg" });
+  charts[id].setOption(option);
+}
+
+function tableHTML(head, rows) {
+  return `<table><thead><tr>${head.map(h => `<th>${h}</th>`).join("")}</tr></thead><tbody>${
+    rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+}
+
+function renderTiles() {
+  const o = R.overall;
+  document.getElementById("tiles").innerHTML = ITEMS.map(i => `
+    <div class="tile">
+      <div class="label"><span class="swatch" style="background:var(--s${ITEMS.indexOf(i) + 1})"></span>${LONG[i]}</div>
+      <div class="num">${fmt(o[i].mean100)}<small>점 / 100점</small></div>
+      <div class="meta">긍정 응답 ${fmt(o[i].pos)}% · 부정 응답 ${fmt(o[i].neg)}% · 응답자 ${o[i].n.toLocaleString("ko-KR")}명</div>
+    </div>`).join("");
+}
+
+function renderDist() {
+  const o = R.overall;
+  const ys = ITEMS.map(i => NAME[i]).reverse();
+  const its = [...ITEMS].reverse();
+  mount("c-dist", {
+    ...base(),
+    grid: { left: 110, right: 20, top: 40, bottom: 30 },
+    legend: { top: 0, left: 0, itemWidth: 12, itemHeight: 12, textStyle: { color: T.ink2 } },
+    tooltip: { ...base().tooltip, trigger: "item",
+      formatter: p => `<b>${p.name}</b><br>${LV_LABEL[its[p.dataIndex]][p.seriesIndex]}: ${fmt(p.value)}%` },
+    xAxis: valAxis({ max: 100, axisLabel: { color: T.muted, formatter: "{value}%" } }),
+    yAxis: catAxis(ys),
+    series: LVS.map((lv, k) => ({
+      name: LV_LEGEND[k], type: "bar", stack: "all", barWidth: 30,
+      itemStyle: { color: T.div[k], borderColor: T.surface, borderWidth: 1 },
+      label: { show: true, formatter: p => p.value >= 6 ? fmt(p.value) : "", color: k === 0 ? "#fff" : k === 4 ? T.ext : T.ink, fontSize: 12 },
+      data: its.map(i => o[i][lv]),
+    })),
+  });
+  document.getElementById("f-dist").innerHTML =
+    `배속 기능은 <b>쓰지 않는 쪽(${fmt(o.speed.neg)}%)이 쓰는 쪽(${fmt(o.speed.pos)}%)보다 조금 많고</b>, 건너뛰기 기능은 반대로 쓰는 쪽(${fmt(o.skip.pos)}%)이 더 많다. 인공지능 콘텐츠는 '보통'(${fmt(o.ai.lv3)}%)이 많아 아직 판단을 미루는 사람이 많지만, 부정(${fmt(o.ai.neg)}%)보다 긍정(${fmt(o.ai.pos)}%)이 훨씬 많다.`;
+}
+
+function lineChart(id, dim, labelRotate, offsets = {}) {
+  const xs = groupsOf(dim);
+  mount(id, {
+    ...base(),
+    grid: { left: labelRotate ? 64 : 44, right: 120, top: 40, bottom: labelRotate ? 70 : 36 },
+    tooltip: { ...base().tooltip, trigger: "axis", axisPointer: { type: "line", lineStyle: { color: T.axis } },
+      valueFormatter: v => fmt(v) + "점" },
+    legend: { show: false },
+    xAxis: catAxis(xs, { boundaryGap: false, axisLabel: { color: T.ink2, rotate: labelRotate || 0, interval: 0 } }),
+    yAxis: valAxis({ min: 35, max: 75, name: "100점 환산", nameTextStyle: { color: T.muted, align: "left" } }),
+    series: ITEMS.map(i => ({
+      name: NAME[i], type: "line", data: xs.map(g => row(dim, g, i).mean100),
+      lineStyle: { width: 2, color: T.s[i] }, itemStyle: { color: T.s[i], borderColor: T.surface, borderWidth: 2 },
+      symbol: "circle", symbolSize: 9,
+      endLabel: { show: true, formatter: "{a}", color: T.ink, fontSize: 13, distance: 8, offset: [0, offsets[i] || 0] },
+      emphasis: { focus: "series" },
+    })),
+  });
+  const headRow = ["항목", ...xs];
+  document.getElementById("t-" + (dim === "연령" ? "age" : "income")).innerHTML =
+    tableHTML(headRow, ITEMS.map(i => [NAME[i], ...xs.map(g => fmt(row(dim, g, i).mean100))]));
+}
+
+function renderGap() {
+  const gap = R.age_gap;
+  const ys = ITEMS.map(i => NAME[i]).reverse();
+  const its = [...ITEMS].reverse();
+  mount("c-gap", {
+    ...base(),
+    grid: { left: 110, right: 30, top: 10, bottom: 30 },
+    tooltip: { ...base().tooltip, trigger: "item",
+      formatter: p => `<b>${p.name || ys[p.value[1]]}</b><br>${p.seriesName}: ${fmt(p.value[0])}%` },
+    xAxis: valAxis({ min: 0, max: 60, axisLabel: { color: T.muted, formatter: "{value}%" } }),
+    yAxis: catAxis(ys),
+    series: [
+      { type: "custom", silent: true, renderItem: (params, api) => {
+          const a = api.coord([api.value(0), api.value(2)]), b = api.coord([api.value(1), api.value(2)]);
+          return { type: "line", shape: { x1: a[0], y1: a[1], x2: b[0], y2: b[1] }, style: { stroke: T.axis, lineWidth: 6, lineCap: "round" } };
+        }, encode: { x: [0, 1], y: 2 }, data: its.map((i, k) => [gap[i].old_pos, gap[i].young_pos, k]) },
+      { name: "60대 이상", type: "scatter", symbolSize: 16, data: its.map((i, k) => [gap[i].old_pos, k]),
+        itemStyle: { color: T.surface, borderColor: T.ink, borderWidth: 2 },
+        label: { show: true, position: "left", distance: 10, formatter: p => fmt(p.value[0]) + "%", color: T.ink2 } },
+      { name: "10~30대", type: "scatter", symbolSize: 16, data: its.map((i, k) => [gap[i].young_pos, k]),
+        itemStyle: { color: T.ink, borderColor: T.surface, borderWidth: 2 },
+        label: { show: true, position: "right", distance: 10, formatter: p => fmt(p.value[0]) + "%", color: T.ink } },
+    ],
+  });
+  const ratio = i => (gap[i].young_pos / gap[i].old_pos).toFixed(1);
+  document.getElementById("f-age").innerHTML =
+    `건너뛰기 기능을 쓴다고 답한 비율은 10~30대가 <b>${fmt(gap.skip.young_pos)}%</b>, 60대 이상은 <b>${fmt(gap.skip.old_pos)}%</b>로 약 <b>${ratio("skip")}배</b> 차이가 난다. 배속 기능도 ${ratio("speed")}배 차이다. 인공지능 콘텐츠 인식은 차이가 ${ratio("ai")}배로 상대적으로 작아서, 높은 연령층도 '새 기능 사용'보다는 '인공지능 콘텐츠'에 덜 거부감을 보인다.`;
+}
+
+function renderIncome() {
+  lineChart("c-income", "가구소득", 30, { skip: -6, ai: 6 });
+  const t = Object.fromEntries(R.trend.filter(r => r.dim === "가구소득").map(r => [r.item, r.rho]));
+  const lo = row("가구소득", "100만원 미만", "skip").mean100, hi = row("가구소득", "700만원 이상", "skip").mean100;
+  document.getElementById("f-income").innerHTML =
+    `건너뛰기 기능 점수는 가구소득 100만원 미만 <b>${fmt(lo)}점</b>에서 700만원 이상 <b>${fmt(hi)}점</b>까지 꾸준히 오른다(순위 상관 ${t.skip}). 저소득 구간에는 고령 가구가 많을 가능성이 있어, 소득과 연령이 함께 작용했을 수 있다.`;
+}
+
+let curDim = "지역";
+function renderExplore() {
+  const box = document.getElementById("dimFilters");
+  box.innerHTML = DIMS.map(d => `<button type="button" aria-pressed="${d === curDim}" data-dim="${d}">${d}</button>`).join("");
+  box.querySelectorAll("button").forEach(b => b.onclick = () => { curDim = b.dataset.dim; renderExplore(); });
+  const gs = groupsOf(curDim);
+  const label = g => row(curDim, g, "speed").small ? g + " ※" : g;
+  const ys = gs.map(label).reverse();
+  const rev = [...gs].reverse();
+  mount("c-explore", {
+    ...base(),
+    grid: { left: 120, right: 50, top: 36, bottom: 30 },
+    legend: { top: 0, left: 0, itemWidth: 12, itemHeight: 12, textStyle: { color: T.ink2 }, data: ITEMS.map(i => NAME[i]) },
+    tooltip: { ...base().tooltip, trigger: "axis", axisPointer: { type: "shadow", shadowStyle: { color: "rgba(127,127,127,.08)" } },
+      formatter: ps => `<b>${ps[0].name}</b> (응답자 ${row(curDim, rev[ps[0].dataIndex], "speed").n.toLocaleString("ko-KR")}명)<br>` +
+        ps.slice().reverse().map(p => `${p.marker}${p.seriesName}: ${fmt(p.value)}점`).join("<br>") },
+    xAxis: valAxis({ min: 30, max: 75 }),
+    yAxis: catAxis(ys),
+    series: [...ITEMS].reverse().map(i => ({
+      name: NAME[i], type: "bar", barMaxWidth: 12, barGap: "20%",
+      itemStyle: { color: T.s[i], borderRadius: [0, 4, 4, 0] },
+      data: rev.map(g => row(curDim, g, i).mean100),
+    })),
+  });
+  const spread = R.spread.filter(s => s.dim === curDim);
+  const txt = spread.map(s => s.gap < 1
+    ? `${NAME[s.item]}은 그룹 사이 차이가 거의 없다(${fmt(s.gap)}점)`
+    : `${NAME[s.item]}은 <b>${s.hi}</b>(${fmt(s.hi_v)}점)이 가장 높고 <b>${s.lo}</b>(${fmt(s.lo_v)}점)이 가장 낮다(차이 ${fmt(s.gap)}점)`).join(". ");
+  document.getElementById("f-explore").innerHTML = `<b>${curDim}</b> 기준: ${txt}.`;
+}
+
+let curItem = "skip";
+function renderStack() {
+  const box = document.getElementById("itemFilters");
+  box.innerHTML = ITEMS.map(i => `<button type="button" aria-pressed="${i === curItem}" data-item="${i}">${NAME[i]}</button>`).join("");
+  box.querySelectorAll("button").forEach(b => b.onclick = () => { curItem = b.dataset.item; renderStack(); });
+  const xs = ORDER.연령;
+  mount("c-stack", {
+    ...base(),
+    grid: { left: 44, right: 16, top: 40, bottom: 30 },
+    legend: { top: 0, left: 0, itemWidth: 12, itemHeight: 12, textStyle: { color: T.ink2 },
+      formatter: n => LV_LABEL[curItem][LV_LEGEND.indexOf(n)] },
+    tooltip: { ...base().tooltip, trigger: "axis", axisPointer: { type: "shadow", shadowStyle: { color: "rgba(127,127,127,.08)" } },
+      formatter: ps => `<b>${ps[0].name}</b><br>` + ps.slice().reverse().map(p => `${p.marker}${LV_LABEL[curItem][p.seriesIndex]}: ${fmt(p.value)}%`).join("<br>") },
+    xAxis: catAxis(xs),
+    yAxis: valAxis({ max: 100, axisLabel: { color: T.muted, formatter: "{value}%" } }),
+    series: LVS.map((lv, k) => ({
+      name: LV_LEGEND[k], type: "bar", stack: "s", barMaxWidth: 56,
+      itemStyle: { color: T.div[k], borderColor: T.surface, borderWidth: 1 },
+      label: { show: true, formatter: p => p.value >= 8 ? Math.round(p.value) : "", color: k === 0 ? "#fff" : k === 4 ? T.ext : T.ink, fontSize: 11 },
+      data: xs.map(g => row("연령", g, curItem)[lv]),
+    })),
+  });
+}
+
+function renderHeat() {
+  const ys = [];
+  DIMS.forEach(d => groupsOf(d).forEach(g => { if (!row(d, g, "speed").small) ys.push([d, g]); }));
+  const data = [];
+  ys.forEach(([d, g], y) => ITEMS.forEach((i, x) => {
+    const v = row(d, g, i).mean100;
+    // 진한 칸은 글자를 밝게
+    data.push({ value: [x, ys.length - 1 - y, v], label: { color: v >= 58 ? "#fff" : T.ink } });
+  }));
+  mount("c-heat", {
+    ...base(),
+    grid: { left: 150, right: 16, top: 40, bottom: 60 },
+    tooltip: { ...base().tooltip, formatter: p => `<b>${ys[ys.length - 1 - p.value[1]].join(" · ")}</b><br>${NAME[ITEMS[p.value[0]]]}: ${fmt(p.value[2])}점` },
+    xAxis: catAxis(ITEMS.map(i => NAME[i]), { position: "top", axisLine: { show: false } }),
+    yAxis: catAxis(ys.map(([d, g]) => `${d} · ${g}`).reverse(), { axisLine: { show: false }, axisLabel: { color: T.ink2, fontSize: 12 } }),
+    visualMap: { min: 40, max: 70, calculable: false, orient: "horizontal", left: "center", bottom: 0,
+      inRange: { color: T.seq }, textStyle: { color: T.muted }, text: ["70점", "40점"], itemWidth: 12, itemHeight: 160 },
+    series: [{ type: "heatmap", data,
+      label: { show: true, formatter: p => fmt(p.value[2]), fontSize: 11 },
+      itemStyle: { borderColor: T.surface, borderWidth: 2, borderRadius: 3 } }],
+  });
+}
+
+function scatter(id, a, b, tags) {
+  const pts = [];
+  DIMS.forEach(d => groupsOf(d).forEach(g => {
+    const ra = row(d, g, a);
+    if (!ra.small) pts.push({ name: `${d} · ${g}`, short: g, value: [ra.mean100, row(d, g, b).mean100],
+      label: { position: ra.mean100 < 50 ? "right" : "left" } });
+  }));
+  const n = pts.length, mx = pts.reduce((s, p) => s + p.value[0], 0) / n, my = pts.reduce((s, p) => s + p.value[1], 0) / n;
+  const slope = pts.reduce((s, p) => s + (p.value[0] - mx) * (p.value[1] - my), 0) / pts.reduce((s, p) => s + (p.value[0] - mx) ** 2, 0);
+  const xs = pts.map(p => p.value[0]), x0 = Math.min(...xs), x1 = Math.max(...xs);
+  const c = R.corr.find(r => r.a === a && r.b === b);
+  const tag = new Set(tags);
+  mount(id, {
+    ...base(),
+    grid: { left: 44, right: 20, top: 30, bottom: 44 },
+    tooltip: { ...base().tooltip, trigger: "item",
+      formatter: p => p.seriesType === "scatter" ? `<b>${p.name}</b><br>${NAME[a]}: ${fmt(p.value[0])}점<br>${NAME[b]}: ${fmt(p.value[1])}점` : "" },
+    xAxis: valAxis({ min: 35, max: 70, name: NAME[a], nameLocation: "middle", nameGap: 28, nameTextStyle: { color: T.ink2 } }),
+    yAxis: valAxis({ min: 35, max: 75, name: NAME[b], nameTextStyle: { color: T.ink2, align: "left" } }),
+    graphic: [{ type: "text", left: 64, top: 42, style: { text: `상관계수 ${c.r}`, fill: T.ink, font: "600 14px system-ui" } }],
+    series: [
+      { type: "line", data: [[x0, my + slope * (x0 - mx)], [x1, my + slope * (x1 - mx)]], symbol: "none", silent: true,
+        lineStyle: { color: T.muted, width: 1.5, type: "dashed" } },
+      { type: "scatter", data: pts, symbolSize: 10, itemStyle: { color: T.s[b], borderColor: T.surface, borderWidth: 2 },
+        label: { show: true, formatter: p => tag.has(p.data.short) ? p.data.short : "", position: "left", color: T.ink2, fontSize: 12 },
+        labelLayout: { moveOverlap: "shiftY" } },
+    ],
+  });
+}
+
+function renderRel() {
+  scatter("c-sc1", "speed", "skip", ["20대", "70세 이상", "강원", "서울"]);
+  scatter("c-sc2", "skip", "ai", ["20대", "70세 이상", "100만원 미만", "강원"]);
+  const c = Object.fromEntries(R.corr.map(r => [r.a + r.b, r]));
+  document.getElementById("f-rel").innerHTML =
+    `배속 기능과 건너뛰기 기능의 상관계수는 <b>${c.speedskip.r}</b>로 거의 한 몸처럼 움직인다. 배속을 많이 쓰는 그룹이 건너뛰기도 많이 쓴다는 뜻이다. 또 ${R.n_groups}개 그룹 중 <b>${R.skip_gt_speed}개</b>에서 건너뛰기 점수가 배속 점수보다 높았다(예외는 70세 이상). 새 시청 기능을 많이 쓰는 그룹은 인공지능 콘텐츠도 긍정적으로 보는 경향이 있다(상관계수 ${c.skipai.r}).`;
+}
+
+function renderOdd() {
+  const xs = ORDER.연령;
+  const a = g => row("연령", g, "ai");
+  const hl = (g, c) => g === "10대" || g === "20대" ? c : c + "99";
+  mount("c-odd", {
+    ...base(),
+    grid: { left: 44, right: 16, top: 40, bottom: 30 },
+    legend: { top: 0, left: 0, itemWidth: 12, itemHeight: 12, textStyle: { color: T.ink2 } },
+    tooltip: { ...base().tooltip, trigger: "axis", axisPointer: { type: "shadow", shadowStyle: { color: "rgba(127,127,127,.08)" } },
+      formatter: ps => `<b>${ps[0].name}</b> (응답자 ${a(ps[0].name).n.toLocaleString("ko-KR")}명)<br>` +
+        ps.map(p => `${p.marker}${p.seriesName}: ${fmt(p.value)}%`).join("<br>") },
+    xAxis: catAxis(xs),
+    yAxis: valAxis({ max: 60, axisLabel: { color: T.muted, formatter: "{value}%" } }),
+    series: [
+      { name: "긍정 응답(긍정적+매우 긍정적)", type: "bar", itemStyle: { color: T.div[4] }, barMaxWidth: 26, barGap: "15%",
+        data: xs.map(g => ({ value: a(g).pos, itemStyle: { color: hl(g, T.div[4]), borderRadius: [4, 4, 0, 0] } })),
+        label: { show: true, position: "top", formatter: p => fmt(p.value), color: T.ink2, fontSize: 11 } },
+      { name: "부정 응답(부정적+매우 부정적)", type: "bar", itemStyle: { color: T.div[0] }, barMaxWidth: 26,
+        data: xs.map(g => ({ value: a(g).neg, itemStyle: { color: hl(g, T.div[0]), borderRadius: [4, 4, 0, 0] } })),
+        label: { show: true, position: "top", formatter: p => fmt(p.value), color: T.ink2, fontSize: 11 } },
+    ],
+  });
+  const t = R.ai_age_tests;
+  document.getElementById("f-odd").innerHTML =
+    `긍정 응답은 10대 <b>${fmt(a("10대").pos)}%</b>에서 20대 <b>${fmt(a("20대").pos)}%</b>로 크게 줄고, 부정 응답은 ${fmt(a("10대").neg)}%에서 ${fmt(a("20대").neg)}%로 늘었다. 하지만 20대의 부정 응답은 30대(${fmt(a("30대").neg)}%)·40대(${fmt(a("40대").neg)}%)와 비슷하고 50대(${fmt(a("50대").neg)}%)와 같다. 즉 <b>20대가 유독 부정적인 것이 아니라, 10대가 유독 긍정적</b>이고 20~40대는 비슷한 수준을 유지하다가 50대부터 낮아지는 모양이다.`;
+  document.getElementById("t-odd").innerHTML = tableHTML(
+    ["비교", "부정 응답 차이", "유의확률", "긍정 응답 차이", "유의확률", "판단"],
+    t.map(r => {
+      const dn = a(r.a).neg - a(r.b).neg, dp = a(r.a).pos - a(r.b).pos;
+      const sig = r.neg.p < 0.05 || r.pos.p < 0.05;
+      return [`${r.a} 대 ${r.b}`, (dn > 0 ? "+" : "") + fmt(dn) + "%p", fmtP(r.neg.p), (dp > 0 ? "+" : "") + fmt(dp) + "%p", fmtP(r.pos.p),
+        sig ? (r.neg.p < 0.05 ? "의미 있는 차이" : "긍정만 차이") : "차이 없음"];
+    }));
+}
+
+let curRaw = "speed";
+const koTitle = t => t.replace(/OTT/g, "온라인 동영상 서비스").replace(/AI/g, "인공지능").replace("스킵", "건너뛰기(스킵)");
+function renderRaw() {
+  const box = document.getElementById("rawFilters");
+  box.innerHTML = ITEMS.map(i => `<button type="button" aria-pressed="${i === curRaw}" data-item="${i}">${NAME[i]}</button>`).join("");
+  box.querySelectorAll("button").forEach(b => b.onclick = () => { curRaw = b.dataset.item; renderRaw(); });
+  const t = DATA.raw[curRaw];
+  document.getElementById("raw-meta").innerHTML =
+    `<div><b>통계표</b> ${koTitle(t.title)}</div><div><b>출처</b> ${t.source}</div><div><b>조사 기간</b> ${[...new Set(t.period.replace("[년]", "").trim().split("~"))].join("~")}년</div><div><b>내려받은 날</b> ${t.downloaded}</div>`;
+  let dim = null;
+  const body = t.rows.map(r => {
+    if (r[0] !== null) dim = r[0];
+    const cls = [r[0] !== null ? "dimstart" : "", dim === "전체" ? "total" : "", r[2] < 100 ? "small" : ""].join(" ").trim();
+    const cells = r.map((v, k) => k === 0 ? `<td class="dim">${v ?? ""}</td>`
+      : k === 1 ? `<td>${v}${r[2] < 100 ? " ※" : ""}</td>`
+      : `<td>${k === 2 ? v.toLocaleString("ko-KR") : v}</td>`).join("");
+    return `<tr class="${cls}">${cells}</tr>`;
+  }).join("");
+  document.getElementById("t-raw").innerHTML =
+    `<table><thead><tr>${t.header.map(h => `<th>${h}</th>`).join("")}</tr></thead><tbody>${body}</tbody></table>`;
+  document.getElementById("rawDown").onclick = () => {
+    let d = null;
+    const lines = [t.header, ...t.rows.map(r => { if (r[0] !== null) d = r[0]; return [d, ...r.slice(1)]; })]
+      .map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(","));
+    const blob = new Blob(["\ufeff" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `원자료_${NAME[curRaw].replace(/ /g, "")}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+}
+
+function renderTables() {
+  const chi = R.chi;
+  document.getElementById("t-chi").innerHTML = tableHTML(
+    ["특성", ...ITEMS.flatMap(i => [`${NAME[i]} 크라메르 계수`, "유의확률"])],
+    DIMS.map(d => [d, ...ITEMS.flatMap(i => { const r = chi.find(c => c.dim === d && c.item === i); return [r.cramers_v.toFixed(3), fmtP(r.p) + (r.p < 0.05 ? "" : " (차이 없음)")]; })]));
+  document.getElementById("t-trend").innerHTML = tableHTML(
+    ["기준", ...ITEMS.map(i => NAME[i])],
+    ["연령", "가구소득"].map(d => [d === "연령" ? "연령이 높아질수록" : "가구소득이 높아질수록",
+      ...ITEMS.map(i => { const r = R.trend.find(t => t.dim === d && t.item === i); return `${r.rho > 0 ? "증가" : "감소"} (${r.rho}, 유의확률 ${fmtP(r.p)})`; })]));
+}
+
+function renderPaper() {
+  const o = R.overall, gap = R.age_gap;
+  const ageRows = ORDER.연령.map(g => [g, ...ITEMS.map(i => fmt(row("연령", g, i).mean100))]);
+  document.getElementById("paper1").innerHTML = `
+    <h3>첫 번째 종이 — 데이터 수집과 분석</h3>
+    <p><b>주제:</b> 동영상 서비스 이용자는 어떤 방식으로 영상을 볼까? (배속·건너뛰기 기능과 인공지능 콘텐츠 인식)</p>
+    <p><b>수집한 데이터 항목(3가지):</b> ☑ 배속 기능 사용 정도 ☑ 건너뛰기(구간 이동) 기능 사용 정도 ☑ 인공지능 활용 콘텐츠에 대한 인식</p>
+    <p><b>비교 기준(7가지):</b> 성별, 연령, 가족구성, 지역, 직업, 학력, 가구소득 · 출처: 국가통계포털, 한국콘텐츠진흥원 콘텐츠이용행태조사(2025)</p>
+    <h3>① 전체 결과 (100점 환산 평균)</h3>
+    <div class="tablewrap">${tableHTML(["항목", "평균 점수", "긍정 응답", "부정 응답"], ITEMS.map(i => [NAME[i], fmt(o[i].mean100) + "점", fmt(o[i].pos) + "%", fmt(o[i].neg) + "%"]))}</div>
+    <p>건너뛰기 기능(${fmt(o.skip.mean100)}점)이 배속 기능(${fmt(o.speed.mean100)}점)보다 많이 쓰인다. 영상을 빠르게 보는 것보다 필요 없는 부분을 넘기는 방식을 더 선호한다. 인공지능 콘텐츠는 '보통'이 ${fmt(o.ai.lv3)}%로 가장 많아 아직 판단을 미루는 사람이 많다.</p>
+    <h3>② 연령별 결과 (100점 환산 평균)</h3>
+    <div class="tablewrap">${tableHTML(["연령", ...ITEMS.map(i => NAME[i])], ageRows)}</div>
+    <p>세 항목 모두 20대 전후에서 가장 높고 나이가 많을수록 낮아진다. 건너뛰기 기능을 쓴다고 답한 비율은 10~30대 ${fmt(gap.skip.young_pos)}%, 60대 이상 ${fmt(gap.skip.old_pos)}%로 2배 넘게 차이 난다. 젊은 세대는 짧은 영상에 익숙해 원하는 장면만 골라 보는 습관이 있기 때문이라고 생각한다.</p>
+    <h3>③ 특이점: 인공지능 콘텐츠와 10대</h3>
+    <p>인공지능 콘텐츠에 대한 긍정 응답은 10대가 ${fmt(row("연령", "10대", "ai").pos)}%로 가장 높았지만, 20대는 ${fmt(row("연령", "20대", "ai").pos)}%로 크게 낮아져 30~40대와 비슷했다. 배속·건너뛰기는 20대가 가장 높은데 인공지능 콘텐츠만 10대가 가장 높다. 20대는 취업을 앞두고 인공지능이 일자리를 대신할 수 있다는 걱정이 크기 때문이라고 생각한다.</p>
+    <h3>④ 가구소득·지역·성별 결과</h3>
+    <p>가구소득이 높을수록 점수가 높았다(건너뛰기: 100만원 미만 ${fmt(row("가구소득", "100만원 미만", "skip").mean100)}점 → 700만원 이상 ${fmt(row("가구소득", "700만원 이상", "skip").mean100)}점). 지역에서는 서울이 배속 기능 ${fmt(row("지역", "서울", "speed").mean100)}점으로 가장 높고 강원이 ${fmt(row("지역", "강원", "speed").mean100)}점으로 가장 낮았다. 반면 남녀 차이는 1점도 나지 않아, 성별보다 나이와 생활환경이 시청 방식에 더 큰 영향을 준다는 것을 알 수 있다.</p>`;
+  document.getElementById("paper2").innerHTML = `
+    <h3>두 번째 종이 — 시각화 표현과 설명</h3>
+    <p><b>그릴 그림(추천 구성):</b> 가운데에 제목 띠 "누가 동영상을 '내 방식대로' 볼까?" → 왼쪽 위에 연령별 꺾은선 그래프 3개(파랑 배속, 주황 건너뛰기, 초록 인공지능) → 오른쪽 위에 10~30대와 60대 이상을 막대 길이로 비교하는 그림(빨리 감기 버튼 ▶▶ 아이콘) → 아래쪽에 반원 게이지로 전체 긍정 비율(배속 ${fmt(o.speed.pos)}%, 건너뛰기 ${fmt(o.skip.pos)}%, 인공지능 ${fmt(o.ai.pos)}%).</p>
+    <p><b>시각화 설명(예시):</b> 세 항목의 연령별 변화를 한눈에 비교하기 위해 꺾은선 그래프를 사용하였다. 선이 오른쪽(나이가 많아지는 쪽)으로 갈수록 내려가는 모습으로 세대 차이를 직관적으로 나타내었다. 항목마다 색을 정해 그래프 전체에서 같은 색을 쓰도록 하여 헷갈리지 않게 하였다. 10~30대와 60대 이상의 차이는 영상 재생 바 모양의 막대로 그려, 젊은 층이 영상을 '빨리 감는' 모습을 표현하였다. 전체 긍정 비율은 반원 게이지로 그려 몇 퍼센트인지 바로 읽을 수 있게 했다. 건너뛰기 점수가 배속 점수보다 높은 그룹이 ${R.n_groups}개 중 ${R.skip_gt_speed}개라는 점은 별 표시로 강조하였다.</p>
+    <p><b>알게 된 점·느낀 점(예시):</b> 처음에는 남녀 차이가 클 것이라고 예상했지만 실제로는 거의 없었고, 나이와 소득에 따라 차이가 컸다. 같은 서비스를 이용해도 세대마다 보는 방식이 다르다는 것을 숫자로 확인할 수 있었다. 앞으로 동영상을 볼 때 무조건 빨리 보기보다 내용에 맞게 속도를 조절해야겠다고 생각했다.</p>`;
+}
+
+function renderAll() {
+  readTokens();
+  renderTiles(); renderDist(); lineChart("c-age", "연령", 0, { speed: -8, skip: 8 }); renderGap(); renderIncome();
+  renderExplore(); renderStack(); renderHeat(); renderRel(); renderOdd(); renderTables(); renderPaper(); renderRaw();
+}
+
+document.getElementById("themebtn").onclick = () => {
+  const root = document.documentElement;
+  const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+  renderAll();
+};
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", renderAll);
+window.addEventListener("resize", () => Object.values(charts).forEach(c => c.resize()));
+renderAll();
+</script>
+</body>
+</html>
