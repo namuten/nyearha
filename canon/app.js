@@ -108,7 +108,9 @@
     time.textContent = `0:00 / ${fmt(p.seconds)}`;
 
     pagesEl.innerHTML = p.pages.map((src, i) =>
-      `<div class="page"><img src="${src}" alt="${p.label} 악보 ${i + 1}쪽" loading="${i ? "lazy" : "eager"}"></div>`).join("");
+      `<div class="page"><img src="${src}" alt="${p.label} 악보 ${i + 1}쪽" loading="${i ? "lazy" : "eager"}">` +
+      (i === 0 ? `<div class="title-cover"></div><div class="title-art"><img src="logo.png" alt=""><span>Canon in D</span></div>` : "") +
+      `</div>`).join("");
     curMeasure = -1; curRow = "";
     marker.hidden = true;
     window.scrollTo({ top: 0 });

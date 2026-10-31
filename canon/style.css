@@ -60,6 +60,8 @@ body { background: var(--bg); color: var(--ink); font-size: 15px; }
 
 /* ---------- main ---------- */
 .main { padding: 28px clamp(16px, 4vw, 48px) 60px; min-width: 0; }
+/* 안경 로고 패턴: 악보 종이 바깥 배경에만 (진하기는 pattern.svg의 opacity로 조절) */
+.main { background: url(pattern.svg) 0 0 / 260px 150px repeat; }
 .piece-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 .piece-title h2 { margin: 0; font-size: 26px; }
 .piece-title p { margin: 4px 0 0; color: var(--dim); }
@@ -95,8 +97,18 @@ body { background: var(--bg); color: var(--ink); font-size: 15px; }
   background: #fff; border-radius: 4px; box-shadow: var(--paper-shadow);
 }
 .page img { width: 100%; height: auto; display: block; }
+/* 첫 쪽 제목: 악보 PNG의 원래 제목은 흰색으로 덮고, 안경 로고의 빈 오른쪽 렌즈 안에 제목을 다시 쓴다.
+   cqw = 악보 폭의 1%라서 화면 크기가 바뀌어도 비율이 유지된다. */
+.page { container-type: inline-size; }
+.title-cover { position: absolute; left: 38.5%; width: 23.5%; top: 4.4%; height: 4.6%; background: #fff; pointer-events: none; }
+.title-art { position: absolute; left: 32.5%; width: 35%; top: 0; margin-top: 1.2%; pointer-events: none; }
+.title-art span {
+  position: absolute; left: 56%; width: 33.5%; top: 11%; height: 82%;
+  display: grid; place-items: center; white-space: nowrap;
+  font: 400 1.9cqw/1 Georgia, "Times New Roman", serif; color: #1f1c18;
+}
 .marker {
-  position: absolute; pointer-events: none; border-radius: 6px;
+  position: absolute; z-index: 1; pointer-events: none; border-radius: 6px;
   background: rgba(214, 120, 40, .16); border: 2px solid rgba(190, 80, 30, .75);
   transition: left .12s ease-out, top .12s ease-out, width .12s ease-out;
 }
