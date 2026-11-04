@@ -55,7 +55,7 @@ body { background: var(--bg); color: var(--ink); font-size: 15px; }
 .menu a[aria-current="page"] { background: rgba(255,255,255,.1); border-left-color: var(--accent); }
 .menu .name { display: block; font-weight: 600; }
 .menu .sub { display: block; margin-top: 2px; font-size: 12px; color: var(--side-dim); }
-.menu li.full + li { margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.08); }
+.menu li.full + li:not(.full) { margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.08); }
 .sidebar-foot { margin-top: auto; padding: 16px 10px 0; font-size: 12px; color: var(--side-dim); }
 
 /* ---------- main ---------- */
@@ -129,7 +129,7 @@ body { background: var(--bg); color: var(--ink); font-size: 15px; }
   .menu a { white-space: nowrap; border-left: 0; border-bottom: 3px solid transparent; }
   .menu a[aria-current="page"] { border-bottom-color: var(--accent); }
   .menu .sub { display: none; }
-  .menu li.full + li { margin: 0; padding: 0; border: 0; }
+  .menu li.full + li:not(.full) { margin: 0; padding: 0; border: 0; }
   /* 모바일: 로고는 메뉴 아래에 작게 */
   .sidebar-foot { margin: 0; padding: 10px 16px 0; }
   .main { padding-top: 18px; }

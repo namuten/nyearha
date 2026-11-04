@@ -12,7 +12,7 @@
   }
 
   $("menu").innerHTML = pieces.map((p) => `
-    <li class="${p.id === "full_score" ? "full" : ""}">
+    <li class="${p.id.startsWith("full_score") ? "full" : ""}">
       <a href="#${p.id}" data-id="${p.id}">
         <span class="name">${p.label}</span>
         <span class="sub">${p.desc}${p.seconds ? " · " + fmt(p.seconds) : ""}</span>
