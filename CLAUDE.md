@@ -3,16 +3,17 @@
 GitHub Pages로 배포되는 개인 저장소 (https://namuten.github.io/nyearha/).
 `main` 브랜치 루트가 자동 배포된다 — PR을 `main`에 머지하면 1~2분 뒤 반영 (브라우저 캐시 최대 10분, 안 보이면 ⌘⇧R).
 
-## 구조 — 3개 영역은 서로 독립
+## 구조 — 4개 영역은 서로 독립
 
 | 영역 | 위치 | 내용 |
 |---|---|---|
 | 학습자료 | 루트 | 강동고 중간고사 대비: `범위.md`(고정 범위), `규칙.md`(STEP1~3 절차), `step*_*.md`, 대시보드 `index.html` |
 | 캐논 | `canon/` | 파헬벨 캐논 관악 앙상블 악보 뷰어 |
 | 리포트 | `data-report/` | 데이터 시각화 리포트 |
+| 대부 | `Godfather/` | 마스카니 간주곡(대부 3편) 플루트·클라리넷 3중주 악보 뷰어 — canon과 같은 구조 |
 
 - 한 영역 작업 시 다른 영역 파일은 건드리지 않는다.
-- `canon/` 안의 경로는 모두 폴더 내부 상대경로 (`../` 참조, 루트와 공유하는 CSS/JS 없음).
+- `canon/`, `Godfather/` 안의 경로는 모두 폴더 내부 상대경로 (`../` 참조, 루트와 공유하는 CSS/JS 없음).
 
 ## Git 작업 방식
 
@@ -64,3 +65,31 @@ GitHub Pages로 배포되는 개인 저장소 (https://namuten.github.io/nyearha
 - 집 PC에 기존 원본 `.mscz`가 남아 있다면, `canon/source/mscz/canon_full_score.mscz`(재현본)와 내용이 같은지 확인만 하면 된다.
   이제 기준 원본은 `canon/source/`다.
 - MuseScore 4.7.x 버전이면 같은 결과가 나온다 (4.7.5와 4.7.6 결과 동일 확인).
+
+---
+
+## Godfather/
+
+**Intermezzo · 플루트·클라리넷 3중주** — P. Mascagni 「Cavalleria rusticana」 간주곡 (대부 3편 마지막 장면 음악).
+퍼블릭 도메인. 콘서트 F장조, 3/4, ♩=60, 34마디, 약 1분 51초 (요청: 2분 이내).
+
+- 대부 메인 테마(Nino Rota, "Speak Softly Love")는 저작권이 살아 있어 사용하지 않고, 이 곡으로 대신함 (2026-11-12 사용자 선택).
+- 페이지(`index.html`/`style.css`/`app.js`/`logo.png`/`pattern.svg`)는 canon 것을 복사해 제목만 바꿈. 동작 동일.
+- 메뉴: 합주(총보) → 플루트 → 클라리넷 1 → 클라리넷 2. 파일 `assets/godfather_<id>.pdf|mp3`, `assets/png/godfather_<id>-<쪽>.png`.
+
+### 음악 구성
+- 선율: flutetunes.com(id 401, 퍼블릭 도메인 플루트 악보) MIDI 기준. 2분 안에 맞추려고 원본 1–11 / 20–31 / 32–38·43–46마디만 사용.
+  - 1–11 도입 주제 (p) · A(12–23) 찬송가풍 주제 (mp, 22 cresc.) · B(24–34) 클라이맥스 (f) → 33 rit., 34 늘임표
+- 플루트: 주선율 전체.
+- 클라리넷 1: 1–23 긴 음 안쪽 화음, B(24–)부터 플루트 선율을 한 옥타브 아래로.
+- 클라리넷 2: 분산화음 반주 (1–23 4분음표, B부터 8분음표).
+- 화음은 `gen.py`의 `CHORDS`(박마다 하나)에서 클라리넷 파트를 자동 생성. 기보 조: 클라리넷 G장조(♯1), 플루트 F장조.
+
+### 악보·음원 원본 — `Godfather/source/`
+- `gen.py` — 선율(콘서트음)·화음표·셈여림 → MusicXML. **악보 수정은 여기서.**
+- `build.sh` — canon과 같음 (`MSCORE` 환경변수로 MuseScore 경로 변경 가능).
+- `publish.py` — `out/` → `assets/` 복사 + `manifest.json` 생성 (마디 좌표 포함).
+- `mpos2json.py` — MuseScore 4(1/96 px)·3(1/24 px) `.mpos` 둘 다 처리.
+- 현재 assets는 맥 MuseScore 4로 빌드한 결과 (2026-11-12, 약 1분 51초). canon과 음색·글꼴 동일.
+  다시 만들기: `bash Godfather/source/build.sh && python3 Godfather/source/publish.py`
+  `.title-cover` 위치는 canon과 같은 값 (MuseScore 4 제목 위치 기준).
