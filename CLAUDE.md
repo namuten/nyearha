@@ -10,6 +10,7 @@ GitHub Pages로 배포되는 개인 저장소 (https://namuten.github.io/nyearha
 | 메인 | 루트 `index.html` | 각 영역으로 들어가는 시작 페이지 (단일 파일, CSS·JS 인라인) |
 | 캐논 | `canon/` | 파헬벨 캐논 관악 앙상블 악보 뷰어 |
 | 대부 | `Godfather/` | 마스카니 간주곡(대부 3편) 플루트·클라리넷 3중주 악보 뷰어 — canon과 같은 구조 |
+| You Raise Me Up | `YouRaiseMeUp/` | 「You Raise Me Up」 후렴 플루트·클라리넷 2중주 악보 뷰어 — canon과 같은 구조 |
 | 학습자료 | `study/` | 강동고 중간고사 대비: `범위.md`(고정 범위), `규칙.md`(STEP1~3 절차), `step*_*.md`, 대시보드 `index.html` |
 | 리포트 | `data-report/` | 데이터 시각화 리포트 |
 | (기타) | 루트 `travel_plan.html` | 강원도 가족여행 — 어디에도 링크 안 됨, 주소로만 접근 |
@@ -19,7 +20,7 @@ GitHub Pages로 배포되는 개인 저장소 (https://namuten.github.io/nyearha
   새 악보 폴더를 만들면 루트 `index.html`의 `SCORES` 배열에 한 줄 추가한다 (`href`, `icon`, `title`, `sub`, `meta`).
 - 각 영역 페이지 맨 위에 메인으로 가는 `<a class="home-link" href="../">← 메인</a>`이 있다 (영역 밖을 가리키는 유일한 `../`).
   새 악보 페이지도 canon처럼 사이드바 `.brand` 맨 위에 넣는다.
-- `canon/`, `Godfather/` 안의 경로는 모두 폴더 내부 상대경로 (`../` 참조, 루트와 공유하는 CSS/JS 없음).
+- `canon/`, `Godfather/`, `YouRaiseMeUp/` 안의 경로는 모두 폴더 내부 상대경로 (`../` 참조, 루트와 공유하는 CSS/JS 없음).
 
 ## Git 작업 방식
 
@@ -99,3 +100,26 @@ GitHub Pages로 배포되는 개인 저장소 (https://namuten.github.io/nyearha
 - 현재 assets는 맥 MuseScore 4로 빌드한 결과 (2026-11-12, 약 1분 51초). canon과 음색·글꼴 동일.
   다시 만들기: `bash Godfather/source/build.sh && python3 Godfather/source/publish.py`
   `.title-cover` 위치는 canon과 같은 값 (MuseScore 4 제목 위치 기준).
+
+---
+
+## YouRaiseMeUp/
+
+**You Raise Me Up · 플루트·클라리넷 2중주 (후렴 클라이맥스)** — Rolf Løvland 작곡 (2002).
+콘서트 B♭장조, 4/4, ♩=66, 17마디, 약 1분 11초. 고등학생 연주자용 (쉽게).
+
+- **저작권이 살아 있는 곡** — 공개 사이트 게시 위험을 알고 사용자가 그대로 공개하기로 결정 (2026-11-13).
+- 처음엔 24마디 전곡(기억으로 입력한 선율)이었으나 원곡처럼 안 들려서, 사용자가 준 G장조 리드시트(`source/*.gif`, 커밋 안 함)의
+  **후렴만** 단3도 올려 두 번 반복하는 구성으로 바꿈 (2026-11-13).
+- 페이지는 Godfather 것을 복사해 제목만 바꿈. 제목이 길어 `.title-cover`를 넓히고(left 34.5%, width 31%) 렌즈 안 제목을 두 줄로 씀.
+- 메뉴: 합주(총보) → 플루트 → 클라리넷. 파일 `assets/youraisemeup_<id>.pdf|mp3`, `assets/png/youraisemeup_<id>-<쪽>.png`.
+
+### 음악 구성
+- 1 도입("You raise me" 못갖춘 선율) · A(2–9) 후렴 1회 (mf) · B(10–17) 후렴 2회, 클라이맥스 (f) → 16 rit., 17 늘임표.
+- 플루트: 원곡 후렴 선율과 리듬 그대로 (콘서트 A4–C6).
+- 클라리넷: A는 2분음표, B는 4분음표 반주 — `gen.py`의 `CHORDS`(반 마디에 하나)에서 자동 생성. 기보 E3–G4 (브레이크 아래, C장조).
+- 규칙: 붙임줄·16분음표·임시표·박을 가로지르는 당김음 없음. `source/test_gen.py`가 검사한다.
+
+### 악보·음원 원본 — `YouRaiseMeUp/source/`
+- 구성은 Godfather와 같음: `gen.py`(악보 수정은 여기서, 후렴은 `CHORUS`) · `build.sh` · `publish.py` · `mpos2json.py` · `test_gen.py`.
+- 다시 만들기: `python3 -m unittest discover -s YouRaiseMeUp/source && bash YouRaiseMeUp/source/build.sh && python3 YouRaiseMeUp/source/publish.py`
