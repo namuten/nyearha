@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Golden · 플루트·클라리넷 2중주</title>
+  <meta name="description" content="HUNTR/X 「Golden」(케이팝 데몬 헌터스) 플루트·클라리넷 2중주 편곡 — 악기별 악보와 연습용 음원">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <header class="brand">
+        <a class="home-link" href="../">← 메인</a>
+        <h1>Golden</h1>
+        <p>HUNTR/X · 플루트·클라리넷 2중주</p>
+      </header>
+      <nav aria-label="악보 목록">
+        <ul id="menu" class="menu"></ul>
+      </nav>
+      <footer class="sidebar-foot">
+        <p class="meta">콘서트 C장조 · 4/4 · ♩=120 · 44마디</p>
+        <p class="credit"><span>2026</span><span>arr. 남연하</span></p>
+      </footer>
+    </aside>
+
+    <main class="main">
+      <header class="piece-head">
+        <div class="piece-title">
+          <h2 id="title">불러오는 중…</h2>
+          <p id="desc"></p>
+        </div>
+        <div class="downloads">
+          <a id="dl-pdf" class="btn" href="#" download>악보 PDF</a>
+          <a id="dl-mp3" class="btn" href="#" download>MP3</a>
+        </div>
+      </header>
+
+      <section class="player" aria-label="음원 재생">
+        <button id="play" class="play" type="button" aria-label="재생">
+          <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+          <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>
+        </button>
+        <input id="seek" class="seek" type="range" min="0" max="100" step="0.1" value="0" aria-label="재생 위치">
+        <span id="time" class="time">0:00 / 0:00</span>
+        <audio id="audio" preload="metadata"></audio>
+      </section>
+
+      <p class="hint">재생하면 현재 마디가 표시돼요. 악보의 마디를 누르면 그 마디부터 재생해요.</p>
+      <section id="pages" class="pages" aria-label="악보"></section>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
