@@ -1,59 +1,140 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nyearha Academic Curator</title>
-    <!-- Fonts: Manrope & Inter (Editorial Scale) -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
-    <!-- CSS (캐시 방지 v3) -->
-    <link rel="stylesheet" href="exam_dashboard.css?v=3">
-    
-    <!-- Marked.js (Markdown 파싱) -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <!-- MathJax (수학 수식 렌더링) -->
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    
-    <!-- 인라인 설정 -->
-    <script>
-      MathJax = {
-        tex: {
-          inlineMath: [['$', '$'], ['\\(', '\\)']]
-        }
-      };
-    </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>nyearha</title>
+<style>
+  :root {
+    --bg: #f4f1ea;
+    --panel: #fbfaf7;
+    --ink: #1f1c18;
+    --dim: #6b6458;
+    --line: #e2dcd0;
+    --accent: #9b3d2c;
+    --shadow: 0 1px 2px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.08);
+    --shadow-hover: 0 2px 4px rgba(0,0,0,.08), 0 14px 32px rgba(0,0,0,.12);
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Segoe UI", sans-serif;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #171513;
+      --panel: #201d1a;
+      --ink: #ece7dd;
+      --dim: #a59d8f;
+      --line: #34302a;
+      --accent: #d06a52;
+      --shadow: 0 8px 24px rgba(0,0,0,.4);
+      --shadow-hover: 0 14px 32px rgba(0,0,0,.5);
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); line-height: 1.5; }
+  main { max-width: 960px; margin: 0 auto; padding: 56px 16px 72px; }
+
+  header { margin-bottom: 44px; }
+  h1 { margin: 0; font-size: 2.2rem; letter-spacing: -0.02em; }
+  header p { margin: 4px 0 0; color: var(--dim); }
+
+  h2 {
+    display: flex; align-items: center; gap: 8px;
+    margin: 0 0 16px; font-size: 1rem; font-weight: 600; color: var(--dim);
+  }
+  h2 .mark { color: var(--accent); font-size: 1.2rem; }
+
+  /* 악보 — 메인 카드 */
+  .scores {
+    display: grid; gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    list-style: none; margin: 0; padding: 0;
+  }
+  .score {
+    display: flex; flex-direction: column; height: 100%;
+    padding: 22px 22px 20px; border-radius: 12px;
+    background: var(--panel); border: 1px solid var(--line); box-shadow: var(--shadow);
+    color: inherit; text-decoration: none;
+    border-top: 4px solid var(--accent);
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .score:hover, .score:focus-visible { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+  .score:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .score .icon { font-size: 2.2rem; line-height: 1; }
+  .score .title { margin-top: 14px; font-size: 1.35rem; font-weight: 700; letter-spacing: -0.01em; }
+  .score .sub { margin-top: 2px; color: var(--dim); font-size: .93rem; }
+  .score .meta {
+    margin-top: auto; padding-top: 16px;
+    font-size: .82rem; color: var(--dim); font-variant-numeric: tabular-nums;
+  }
+  .score .meta::after { content: " →"; color: var(--accent); }
+
+  /* 그 밖에 — 작은 칩 */
+  .others { margin-top: 56px; padding-top: 28px; border-top: 1px solid var(--line); }
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; list-style: none; margin: 0; padding: 0; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 9px 16px; border-radius: 999px;
+    background: var(--panel); border: 1px solid var(--line);
+    color: inherit; text-decoration: none; font-size: .95rem;
+    transition: border-color .15s ease, color .15s ease;
+  }
+  .chip:hover, .chip:focus-visible { border-color: var(--accent); color: var(--accent); }
+  .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .chip small { color: var(--dim); font-size: .8rem; }
+
+  @media (max-width: 600px) {
+    main { padding-top: 36px; }
+    h1 { font-size: 1.8rem; }
+    header { margin-bottom: 32px; }
+  }
+</style>
 </head>
 <body>
-    <div class="app-container">
-        <!-- Sidebar (왼쪽 메뉴) -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h2>☁️ Exam Prep</h2>
-                <p>Nyearha Study System</p>
-            </div>
-            <ul class="nav-menu" id="navMenu">
-                <!-- Javascript에서 렌더링 -->
-            </ul>
-        </aside>
+<main>
+  <header>
+    <h1>nyearha</h1>
+    <p>악보와 자료 모음</p>
+  </header>
 
-        <!-- Main Content (우측 메인 본문) -->
-        <main class="main-content">
-            <div class="content-wrapper">
-                <header class="content-header">
-                    <h1 id="subjectTitle">과목을 선택해주세요</h1>
-                </header>
-                <div class="markdown-body" id="contentArea">
-                    <div class="welcome-message">
-                        <div class="icon-pulse">✨</div>
-                        <p>왼쪽 메뉴에서 과목을 선택하여 문제를 풀어보세요!</p>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-    
-    <!-- JS Logic -->
-    <script src="exam_dashboard.js"></script>
+  <section aria-labelledby="scores-h">
+    <h2 id="scores-h"><span class="mark">♪</span> 악보</h2>
+    <ul class="scores" id="scores"></ul>
+  </section>
+
+  <section class="others" aria-labelledby="others-h">
+    <h2 id="others-h">그 밖에</h2>
+    <ul class="chips" id="others"></ul>
+  </section>
+</main>
+
+<script>
+  // ── 악보: 새 곡 폴더를 만들면 여기에 한 줄 추가 (위에서부터 순서대로 표시) ──
+  const SCORES = [
+    { href: 'canon/',     icon: '🎺', title: 'Canon in D', sub: '파헬벨 · 관악 앙상블',            meta: '24마디 · 약 95초' },
+    { href: 'Godfather/', icon: '🎻', title: 'Intermezzo', sub: '마스카니 · 플루트·클라리넷 3중주', meta: '34마디 · 약 1분 51초' },
+  ];
+
+  // ── 그 밖에 ──
+  const OTHERS = [
+    { href: 'study/',       icon: '📚', title: '학습자료', sub: '중간고사 대비' },
+    { href: 'data-report/', icon: '📊', title: '리포트',   sub: '데이터 시각화' },
+  ];
+
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  document.getElementById('scores').innerHTML = SCORES.map(s => `
+    <li><a class="score" href="${esc(s.href)}">
+      <span class="icon" aria-hidden="true">${s.icon}</span>
+      <span class="title">${esc(s.title)}</span>
+      <span class="sub">${esc(s.sub)}</span>
+      <span class="meta">${esc(s.meta)}</span>
+    </a></li>`).join('');
+
+  document.getElementById('others').innerHTML = OTHERS.map(o => `
+    <li><a class="chip" href="${esc(o.href)}">
+      <span aria-hidden="true">${o.icon}</span> ${esc(o.title)} <small>${esc(o.sub)}</small>
+    </a></li>`).join('');
+</script>
 </body>
 </html>

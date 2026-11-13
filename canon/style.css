@@ -42,6 +42,9 @@ body { background: var(--bg); color: var(--ink); font-size: 15px; }
 }
 .brand { padding: 0 10px 22px; border-bottom: 1px solid rgba(255,255,255,.08); }
 .brand h1 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-weight: 600; font-size: 26px; letter-spacing: .01em; }
+.home-link { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 16px; padding: 6px 12px; border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.22); background: rgba(255,255,255,.08); color: var(--side-ink); font-size: 13px; font-weight: 600; text-decoration: none; }
+.home-link:hover, .home-link:focus-visible { background: var(--accent); border-color: var(--accent); color: #fff; }
 .brand p { margin: 6px 0 0; color: var(--side-dim); font-size: 13px; }
 .sidebar-foot .meta { margin: 0; }
 .sidebar-foot .credit { display: flex; justify-content: flex-end; flex-wrap: wrap; column-gap: 10px; margin: 8px 0 0; padding-top: 8px; border-top: 1px solid rgba(255,255,255,.08); }
