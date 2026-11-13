@@ -11,6 +11,7 @@ GitHub Pages로 배포되는 개인 저장소 (https://namuten.github.io/nyearha
 | 캐논 | `canon/` | 파헬벨 캐논 관악 앙상블 악보 뷰어 |
 | 대부 | `Godfather/` | 마스카니 간주곡(대부 3편) 플루트·클라리넷 3중주 악보 뷰어 — canon과 같은 구조 |
 | You Raise Me Up | `YouRaiseMeUp/` | 「You Raise Me Up」 후렴 플루트·클라리넷 2중주 악보 뷰어 — canon과 같은 구조 |
+| Golden | `Golden/` | HUNTR/X 「Golden」 플루트·클라리넷 2중주 악보 뷰어 — canon과 같은 구조 |
 | 학습자료 | `study/` | 강동고 중간고사 대비: `범위.md`(고정 범위), `규칙.md`(STEP1~3 절차), `step*_*.md`, 대시보드 `index.html` |
 | 리포트 | `data-report/` | 데이터 시각화 리포트 |
 | (기타) | 루트 `travel_plan.html` | 강원도 가족여행 — 어디에도 링크 안 됨, 주소로만 접근 |
@@ -20,7 +21,7 @@ GitHub Pages로 배포되는 개인 저장소 (https://namuten.github.io/nyearha
   새 악보 폴더를 만들면 루트 `index.html`의 `SCORES` 배열에 한 줄 추가한다 (`href`, `icon`, `title`, `sub`, `meta`).
 - 각 영역 페이지 맨 위에 메인으로 가는 `<a class="home-link" href="../">← 메인</a>`이 있다 (영역 밖을 가리키는 유일한 `../`).
   새 악보 페이지도 canon처럼 사이드바 `.brand` 맨 위에 넣는다.
-- `canon/`, `Godfather/`, `YouRaiseMeUp/` 안의 경로는 모두 폴더 내부 상대경로 (`../` 참조, 루트와 공유하는 CSS/JS 없음).
+- `canon/`, `Godfather/`, `YouRaiseMeUp/`, `Golden/` 안의 경로는 모두 폴더 내부 상대경로 (`../` 참조, 루트와 공유하는 CSS/JS 없음).
 
 ## Git 작업 방식
 
@@ -123,3 +124,25 @@ GitHub Pages로 배포되는 개인 저장소 (https://namuten.github.io/nyearha
 ### 악보·음원 원본 — `YouRaiseMeUp/source/`
 - 구성은 Godfather와 같음: `gen.py`(악보 수정은 여기서, 후렴은 `CHORUS`) · `build.sh` · `publish.py` · `mpos2json.py` · `test_gen.py`.
 - 다시 만들기: `python3 -m unittest discover -s YouRaiseMeUp/source && bash YouRaiseMeUp/source/build.sh && python3 YouRaiseMeUp/source/publish.py`
+
+---
+
+## Golden/
+
+**Golden · 플루트·클라리넷 2중주** — HUNTR/X (케이팝 데몬 헌터스, 2025). EJAE, Mark Sonnenblick, IDO, 24, TEDDY 작곡.
+콘서트 C장조, 4/4, ♩=120, 44마디, 약 1분 35초. 초급~중급.
+
+- **저작권이 살아 있는 곡** — You Raise Me Up과 같이 공개 게시하기로 함 (2026-11-13).
+- 선율 원본: 사용자가 준 G장조 멜로디 악보 `source/HUNTRIX - Golden (원곡).pdf`(81마디, 커밋 안 함)를 완전4도 올림.
+- 페이지는 Godfather 것을 복사해 제목만 바꿈 (`.title-cover`도 Godfather 값).
+- 메뉴: 합주(총보) → 플루트 → 클라리넷. 파일 `assets/golden_<id>.pdf|mp3`, `assets/png/golden_<id>-<쪽>.png`.
+
+### 음악 구성
+- 1–4 도입(원본 21–24, mp→cresc.) · A(5–20) 후렴 1회(원본 25–40, mf) · B(21–36) 후렴 2회(원본 58–73, f) · C(37–44) 마무리(원본 74–81) → 43 rit., 44 늘임표.
+- 플루트: 원곡 리듬 유지 (셋잇단음표·8분음표 당김음 붙임줄 허용, 16분음표 없음). 콘서트 G4–D6.
+- 클라리넷: `gen.py`의 `CHORDS`(반 마디에 하나)에서 자동 생성 — 도입·A 2분음표, B 4분음표 분산화음, C 2분음표. 기보 D장조, E3–G4(브레이크 아래).
+- `gen.py`의 선율은 **악보 원본 조(G장조)** 로 적고 코드에서 4도 올림. 길이 단위는 4분음표=12 (셋잇단 8분=4).
+
+### 악보·음원 원본 — `Golden/source/`
+- 구성은 YouRaiseMeUp과 같음: `gen.py` · `build.sh` · `publish.py` · `mpos2json.py` · `test_gen.py`.
+- 다시 만들기: `python3 -m unittest discover -s Golden/source && bash Golden/source/build.sh && python3 Golden/source/publish.py`
