@@ -66,6 +66,9 @@ h1, h2, h3, h4, .font-display {
   padding: 0 2.5rem 2rem;
 }
 
+.home-link { display: inline-block; margin-bottom: 1rem; color: var(--primary); opacity: .6; font-size: .85rem; text-decoration: none; }
+.home-link:hover, .home-link:focus-visible { opacity: 1; }
+
 .sidebar-header h2 {
   font-size: 1.85rem;
   font-weight: 800;
