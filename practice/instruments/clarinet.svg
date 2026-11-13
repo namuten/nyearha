@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 720" role="img" aria-labelledby="t">
+  <title id="t">B♭ 클라리넷 정면 키 그림 (뵘식)</title>
+  <style>
+    /* 기본값만 — :where()라 명시도 0, 페이지 CSS(.on / .next)가 항상 이긴다 */
+    :where(.key) { fill: var(--key-fill, #ffffff); stroke: var(--key-stroke, #4a4a4a); stroke-width: 2; }
+    :where(.body) { fill: var(--body-fill, none); stroke: var(--body-stroke, #8a8a8a); stroke-width: 2; }
+    :where(.lbl) { fill: currentColor; font: 600 12px system-ui, sans-serif; pointer-events: none; }
+    :where(.small) { font-size: 10px; font-weight: 500; opacity: .75; }
+    :where(.guide) { fill: none; stroke: var(--body-stroke, #8a8a8a); stroke-width: 1; stroke-dasharray: 3 3; }
+  </style>
+
+  <!-- 몸통 (위 = 마우스피스) -->
+  <path class="body" d="M140 8 h20 l6 46 h-32 z"/>
+  <rect class="body" x="132" y="54" width="36" height="40" rx="6"/>
+  <rect class="body" x="127" y="94" width="46" height="296" rx="4"/>
+  <rect class="body" x="127" y="390" width="46" height="200" rx="4"/>
+  <path class="body" d="M127 590 h46 l20 96 h-86 z"/>
+
+  <!-- 뒷면: 레지스터 키 · 엄지 구멍 (몸통 왼쪽 옆) -->
+  <text class="lbl small" x="62" y="112" text-anchor="middle">뒷면</text>
+  <path class="guide" d="M80 150 H127"/>
+  <circle id="reg" class="key" cx="62" cy="132" r="9"><title>레지스터 키 (뒷면, 엄지)</title></circle>
+  <circle id="thumb" class="key" cx="62" cy="162" r="13"><title>엄지 구멍 (뒷면)</title></circle>
+  <text class="lbl small" x="40" y="136" text-anchor="end">R</text>
+  <text class="lbl small" x="40" y="166" text-anchor="end">엄지</text>
+
+  <!-- 왼손 위쪽 키: A · G♯ -->
+  <rect id="LA" class="key" x="180" y="104" width="34" height="18" rx="6"><title>A 키 (왼손 검지 옆)</title></rect>
+  <rect id="LGs" class="key" x="180" y="128" width="34" height="18" rx="6"><title>G♯ 키 (왼손 검지 옆)</title></rect>
+  <text class="lbl small" x="220" y="117">A</text>
+  <text class="lbl small" x="220" y="141">G♯</text>
+
+  <!-- 왼손 링 -->
+  <circle id="L1" class="key" cx="150" cy="178" r="20"><title>왼손 1 (검지)</title></circle>
+  <circle id="L2" class="key" cx="150" cy="238" r="20"><title>왼손 2 (중지)</title></circle>
+  <circle id="L3" class="key" cx="150" cy="298" r="20"><title>왼손 3 (약지)</title></circle>
+  <text class="lbl" x="118" y="182" text-anchor="end">왼1</text>
+  <text class="lbl" x="118" y="242" text-anchor="end">왼2</text>
+  <text class="lbl" x="118" y="302" text-anchor="end">왼3</text>
+
+  <!-- 오른손 옆키 (몸통 오른쪽) -->
+  <rect id="RS1" class="key" x="180" y="404" width="14" height="16" rx="4"><title>오른손 옆키 1</title></rect>
+  <rect id="RS2" class="key" x="180" y="424" width="14" height="16" rx="4"><title>오른손 옆키 2</title></rect>
+  <rect id="RS3" class="key" x="180" y="444" width="14" height="16" rx="4"><title>오른손 옆키 3</title></rect>
+  <rect id="RS4" class="key" x="180" y="464" width="14" height="16" rx="4"><title>오른손 옆키 4</title></rect>
+  <text class="lbl small" x="200" y="446">옆키</text>
+
+  <!-- 오른손 링 -->
+  <circle id="R1" class="key" cx="150" cy="436" r="20"><title>오른손 1 (검지)</title></circle>
+  <circle id="R2" class="key" cx="150" cy="496" r="20"><title>오른손 2 (중지)</title></circle>
+  <circle id="R3" class="key" cx="150" cy="556" r="20"><title>오른손 3 (약지)</title></circle>
+  <text class="lbl" x="118" y="440" text-anchor="end">오1</text>
+  <text class="lbl" x="118" y="500" text-anchor="end">오2</text>
+  <text class="lbl" x="118" y="560" text-anchor="end">오3</text>
+
+  <!-- 왼손 새끼키 (아래 왼쪽) -->
+  <text class="lbl small" x="54" y="606" text-anchor="middle">왼손 새끼</text>
+  <rect id="LP_E" class="key" x="12" y="614" width="40" height="28" rx="8"><title>왼손 새끼 E 키</title></rect>
+  <rect id="LP_F" class="key" x="56" y="614" width="40" height="28" rx="8"><title>왼손 새끼 F 키</title></rect>
+  <rect id="LP_Fs" class="key" x="12" y="646" width="40" height="28" rx="8"><title>왼손 새끼 F♯ 키</title></rect>
+  <rect id="LP_Cs" class="key" x="56" y="646" width="40" height="28" rx="8"><title>왼손 새끼 C♯ 키</title></rect>
+  <text class="lbl" x="32" y="632" text-anchor="middle">E</text>
+  <text class="lbl" x="76" y="632" text-anchor="middle">F</text>
+  <text class="lbl" x="32" y="664" text-anchor="middle">F♯</text>
+  <text class="lbl" x="76" y="664" text-anchor="middle">C♯</text>
+
+  <!-- 오른손 새끼키 (아래 오른쪽) -->
+  <text class="lbl small" x="246" y="606" text-anchor="middle">오른손 새끼</text>
+  <rect id="RP_E" class="key" x="204" y="614" width="40" height="28" rx="8"><title>오른손 새끼 E 키</title></rect>
+  <rect id="RP_F" class="key" x="248" y="614" width="40" height="28" rx="8"><title>오른손 새끼 F 키</title></rect>
+  <rect id="RP_Fs" class="key" x="204" y="646" width="40" height="28" rx="8"><title>오른손 새끼 F♯ 키</title></rect>
+  <rect id="RP_Gs" class="key" x="248" y="646" width="40" height="28" rx="8"><title>오른손 새끼 G♯ 키</title></rect>
+  <text class="lbl" x="224" y="632" text-anchor="middle">E</text>
+  <text class="lbl" x="268" y="632" text-anchor="middle">F</text>
+  <text class="lbl" x="224" y="664" text-anchor="middle">F♯</text>
+  <text class="lbl" x="268" y="664" text-anchor="middle">G♯</text>
+</svg>

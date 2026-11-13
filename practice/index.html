@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>손가락 연습 · 클라리넷</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="home-link" href="../">← 메인</a>
+    <h1 class="title"><span class="brand">손가락 연습</span> <span id="pieceTitle"></span></h1>
+    <div class="top-actions">
+      <label class="sr-only" for="pieceSelect">곡 · 파트</label>
+      <select id="pieceSelect"></select>
+      <a id="scoreLink" class="score-link" href="#">🎼 악보로 보기</a>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="finger-panel" aria-label="운지">
+      <div class="info">
+        <div class="now">
+          <span class="tag">지금</span>
+          <div class="now-name"><span id="nowSolfege" class="solfege">–</span> <span id="nowPitch" class="pitch"></span></div>
+          <div class="remain" aria-hidden="true"><div id="remainBar" class="remain-bar"></div></div>
+        </div>
+        <div class="next">
+          <span class="tag">다음</span>
+          <div id="nextText" class="next-text"></div>
+        </div>
+        <div id="countIn" class="count-in" aria-live="assertive"></div>
+        <ul class="legend">
+          <li><i class="sw sw-on"></i>누름</li>
+          <li><i class="sw sw-off"></i>안 누름</li>
+          <li><i class="sw sw-next"></i>다음 음에서 바뀜</li>
+        </ul>
+      </div>
+      <div id="fingering" class="fingering" aria-hidden="true"></div>
+    </section>
+
+    <section class="timeline" aria-label="흘러오는 음 타임라인">
+      <div id="track" class="track"></div>
+      <div class="cursor" aria-hidden="true"></div>
+    </section>
+
+    <section class="player" aria-label="플레이어">
+      <div class="row">
+        <button id="play" class="play" type="button" aria-label="재생 / 정지 (스페이스)">
+          <svg class="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          <svg class="i-pause" viewBox="0 0 24 24"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+        </button>
+        <input id="seek" class="seek" type="range" min="0" max="1000" step="1" value="0" aria-label="재생 위치">
+        <span id="time" class="time">0:00 / 0:00</span>
+      </div>
+      <div class="row opts">
+        <div class="group" role="group" aria-label="재생 속도">
+          <span class="glabel">속도</span>
+          <button type="button" class="seg" data-rate="0.5">0.5</button>
+          <button type="button" class="seg" data-rate="0.75">0.75</button>
+          <button type="button" class="seg" data-rate="1" aria-pressed="true">1.0x</button>
+        </div>
+        <div class="group" role="group" aria-label="구간 반복">
+          <span class="glabel">반복</span>
+          <select id="loopStart" aria-label="반복 시작 마디"></select>
+          <span>–</span>
+          <select id="loopEnd" aria-label="반복 끝 마디"></select>
+          <span class="glabel">마디</span>
+          <button type="button" id="loopToggle" class="seg toggle" aria-pressed="false">끄기</button>
+        </div>
+        <div class="group">
+          <span class="glabel">카운트인</span>
+          <button type="button" id="countToggle" class="seg toggle" aria-pressed="true">켜기</button>
+        </div>
+      </div>
+      <p id="playMsg" class="play-msg" role="status" hidden></p>
+      <audio id="audio" preload="auto"></audio>
+    </section>
+    <p class="hint">스페이스: 재생/정지 · 그림의 키 색: 초록 = 누름, 파란 테두리 = 다음 음에서 바뀌는 키</p>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
