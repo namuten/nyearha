@@ -12,6 +12,7 @@ GitHub Pages로 배포되는 개인 저장소 (https://namuten.github.io/nyearha
 | 대부 | `Godfather/` | 마스카니 간주곡(대부 3편) 플루트·클라리넷 3중주 악보 뷰어 — canon과 같은 구조 |
 | You Raise Me Up | `YouRaiseMeUp/` | 「You Raise Me Up」 후렴 플루트·클라리넷 2중주 악보 뷰어 — canon과 같은 구조 |
 | Golden | `Golden/` | HUNTR/X 「Golden」 플루트·클라리넷 2중주 악보 뷰어 — canon과 같은 구조 |
+| 그대 안의 블루 | `Blue/` | 김현철·이소라 「그대 안의 블루」 플루트·클라리넷 2중주 악보 뷰어 — canon과 같은 구조 |
 | 학습자료 | `study/` | 강동고 중간고사 대비: `범위.md`(고정 범위), `규칙.md`(STEP1~3 절차), `step*_*.md`, 대시보드 `index.html` |
 | 리포트 | `data-report/` | 데이터 시각화 리포트 |
 | (기타) | 루트 `travel_plan.html` | 강원도 가족여행 — 어디에도 링크 안 됨, 주소로만 접근 |
@@ -21,7 +22,7 @@ GitHub Pages로 배포되는 개인 저장소 (https://namuten.github.io/nyearha
   새 악보 폴더를 만들면 루트 `index.html`의 `SCORES` 배열에 한 줄 추가한다 (`href`, `icon`, `title`, `sub`, `meta`).
 - 각 영역 페이지 맨 위에 메인으로 가는 `<a class="home-link" href="../">← 메인</a>`이 있다 (영역 밖을 가리키는 유일한 `../`).
   새 악보 페이지도 canon처럼 사이드바 `.brand` 맨 위에 넣는다.
-- `canon/`, `Godfather/`, `YouRaiseMeUp/`, `Golden/` 안의 경로는 모두 폴더 내부 상대경로 (`../` 참조, 루트와 공유하는 CSS/JS 없음).
+- `canon/`, `Godfather/`, `YouRaiseMeUp/`, `Golden/`, `Blue/` 안의 경로는 모두 폴더 내부 상대경로 (`../` 참조, 루트와 공유하는 CSS/JS 없음).
 
 ## Git 작업 방식
 
@@ -146,3 +147,27 @@ GitHub Pages로 배포되는 개인 저장소 (https://namuten.github.io/nyearha
 ### 악보·음원 원본 — `Golden/source/`
 - 구성은 YouRaiseMeUp과 같음: `gen.py` · `build.sh` · `publish.py` · `mpos2json.py` · `test_gen.py`.
 - 다시 만들기: `python3 -m unittest discover -s Golden/source && bash Golden/source/build.sh && python3 Golden/source/publish.py`
+
+---
+
+## Blue/
+
+**그대 안의 블루 · 플루트·클라리넷 2중주** — 김현철 작곡, 이현승 작사, 이소라·김현철 노래 (1992).
+4/4, ♩=70 (원곡 악보 Slow Go Go ♩=60), 24마디, 약 1분 32초. 초급~중급, 재즈 분위기.
+
+- **저작권이 살아 있는 곡** — You Raise Me Up·Golden과 같이 공개 게시하기로 함 (2026-11-13).
+- 선율 원본: 사용자가 준 리드시트 `source/김현철,이소라-그대안의블루.jpg`(커밋 안 함). 1절+후렴 그대로, 조도 악보대로
+  (1–9 F장조, 10부터 B♭장조).
+- 페이지는 Golden 것을 복사해 제목만 바꿈 (`.title-cover`도 Golden 값, 렌즈 안 제목은 두 줄).
+- 메뉴: 합주(총보) → 플루트 → 클라리넷. 파일 `assets/blue_<id>.pdf|mp3`, `assets/png/blue_<id>-<쪽>.png`.
+
+### 음악 구성
+- 1–4 전주(B♭M7–C, 3마디 플루트 연결구, mp) · A(5–9) "난 난 눈을 감아요" · B(10–15) "저 파란 어둠 속에서" (mf) ·
+  C(16–24) 후렴 "사랑은 아니지만 … 그대" (f) → 23 rit., 24 늘임표.
+- 플루트: 원곡 리듬 그대로 (16분음표·셋잇단·붙임줄 포함, 꾸밈음만 생략). 콘서트 D4–B♭5.
+- 클라리넷: 재즈 반주 — `gen.py`의 `CHORDS`(반 마디에 하나, 7화음)에서 자동 생성. 2분음표 근음→7음,
+  후렴과 플루트가 쉬는 마디(4·9·12)는 4분음표 워킹(R-3-5-7). 기보 E3–G4(브레이크 아래), G장조→C장조.
+
+### 악보·음원 원본 — `Blue/source/`
+- 구성은 Golden과 같음: `gen.py` · `build.sh` · `publish.py` · `mpos2json.py` · `test_gen.py`. 선율은 콘서트음으로 적음.
+- 다시 만들기: `python3 -m unittest discover -s Blue/source && bash Blue/source/build.sh && python3 Blue/source/publish.py`

@@ -1,0 +1,140 @@
+:root {
+  --bg: #f4f1ea;
+  --panel: #fbfaf7;
+  --side: #23201c;
+  --side-ink: #e9e4da;
+  --side-dim: #a39b8c;
+  --ink: #1f1c18;
+  --dim: #6b6458;
+  --line: #e2dcd0;
+  --accent: #9b3d2c;
+  --accent-ink: #fff;
+  --paper-shadow: 0 1px 2px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.08);
+  --radius: 10px;
+  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #171513;
+    --panel: #201d1a;
+    --side: #0f0e0c;
+    --ink: #ece7dd;
+    --dim: #a59d8f;
+    --line: #34302a;
+    --accent: #d06a52;
+    --paper-shadow: 0 8px 24px rgba(0,0,0,.4);
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { background: var(--bg); color: var(--ink); font-size: 15px; }
+
+.app { display: grid; grid-template-columns: 260px minmax(0, 1fr); min-height: 100vh; }
+
+/* ---------- sidebar ---------- */
+.sidebar {
+  background: var(--side); color: var(--side-ink);
+  position: sticky; top: 0; height: 100vh;
+  display: flex; flex-direction: column; padding: 28px 16px 20px;
+}
+.brand { padding: 0 10px 22px; border-bottom: 1px solid rgba(255,255,255,.08); }
+.brand h1 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-weight: 600; font-size: 26px; letter-spacing: .01em; }
+.home-link { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 16px; padding: 6px 12px; border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.22); background: rgba(255,255,255,.08); color: var(--side-ink); font-size: 13px; font-weight: 600; text-decoration: none; }
+.home-link:hover, .home-link:focus-visible { background: var(--accent); border-color: var(--accent); color: #fff; }
+.brand p { margin: 6px 0 0; color: var(--side-dim); font-size: 13px; }
+.sidebar-foot .meta { margin: 0; }
+.sidebar-foot .credit { display: flex; justify-content: flex-end; flex-wrap: wrap; column-gap: 10px; margin: 8px 0 0; padding-top: 8px; border-top: 1px solid rgba(255,255,255,.08); }
+
+.menu { list-style: none; margin: 18px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.menu a {
+  display: block; padding: 10px 12px; border-radius: 8px;
+  color: var(--side-ink); text-decoration: none; border-left: 3px solid transparent;
+}
+.menu a:hover { background: rgba(255,255,255,.06); }
+.menu a[aria-current="page"] { background: rgba(255,255,255,.1); border-left-color: var(--accent); }
+.menu .name { display: block; font-weight: 600; }
+.menu .sub { display: block; margin-top: 2px; font-size: 12px; color: var(--side-dim); }
+.menu li.full + li:not(.full) { margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.08); }
+.sidebar-foot { margin-top: auto; padding: 16px 10px 0; font-size: 12px; color: var(--side-dim); }
+
+/* ---------- main ---------- */
+.main { padding: 28px clamp(16px, 4vw, 48px) 60px; min-width: 0; }
+/* 안경 로고 패턴: 악보 종이 바깥 배경에만 (진하기는 pattern.svg의 opacity로 조절) */
+.main { background: url(pattern.svg) 0 0 / 260px 150px repeat; }
+.piece-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.piece-title h2 { margin: 0; font-size: 26px; }
+.piece-title p { margin: 4px 0 0; color: var(--dim); }
+.downloads { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 14px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--panel); color: var(--ink); text-decoration: none; font-weight: 600; font-size: 14px;
+}
+.btn::before { content: "↓"; color: var(--accent); font-weight: 700; }
+.btn:hover { border-color: var(--accent); }
+
+.player {
+  position: sticky; top: 0; z-index: 2;
+  display: flex; align-items: center; gap: 14px;
+  margin: 18px 0 22px; padding: 12px 16px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+}
+.play {
+  flex: none; width: 46px; height: 46px; border-radius: 50%; border: 0; cursor: pointer;
+  background: var(--accent); color: var(--accent-ink); display: grid; place-items: center;
+}
+.play svg { width: 22px; height: 22px; fill: currentColor; }
+.play .i-pause, .play.playing .i-play { display: none; }
+.play.playing .i-pause { display: block; }
+.play:focus-visible, .menu a:focus-visible, .btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.seek { flex: 1; min-width: 0; accent-color: var(--accent); }
+.time { flex: none; font-variant-numeric: tabular-nums; color: var(--dim); font-size: 13px; }
+
+.pages { display: flex; flex-direction: column; align-items: center; gap: 24px; padding-bottom: 45vh; }
+.page {
+  position: relative; width: 100%; max-width: 860px; cursor: pointer;
+  background: #fff; border-radius: 4px; box-shadow: var(--paper-shadow);
+}
+.page img { width: 100%; height: auto; display: block; }
+/* 첫 쪽 제목: 악보 PNG의 원래 제목은 흰색으로 덮고, 안경 로고의 빈 오른쪽 렌즈 안에 제목을 다시 쓴다.
+   cqw = 악보 폭의 1%라서 화면 크기가 바뀌어도 비율이 유지된다. */
+.page { container-type: inline-size; }
+.title-cover { position: absolute; left: 38.5%; width: 23.5%; top: 4.4%; height: 4.6%; background: #fff; pointer-events: none; }
+.title-art { position: absolute; left: 32.5%; width: 35%; top: 0; margin-top: 1.2%; pointer-events: none; }
+.title-art span {
+  position: absolute; left: 56%; width: 33.5%; top: 11%; height: 82%;
+  display: grid; place-items: center; white-space: nowrap;
+  font: 400 1.9cqw/1 Georgia, "Times New Roman", serif; color: #1f1c18;
+}
+.marker {
+  position: absolute; z-index: 1; pointer-events: none; border-radius: 6px;
+  background: rgba(214, 120, 40, .16); border: 2px solid rgba(190, 80, 30, .75);
+  transition: left .12s ease-out, top .12s ease-out, width .12s ease-out;
+}
+.marker::before {
+  content: attr(data-bar); position: absolute; top: -10px; left: -10px;
+  min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px;
+  background: rgb(190, 80, 30); color: #fff; font: 600 11px/20px -apple-system, sans-serif; text-align: center;
+}
+.hint { margin: -10px 0 18px; color: var(--dim); font-size: 13px; }
+
+/* ---------- mobile ---------- */
+@media (max-width: 760px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .sidebar { position: static; height: auto; padding: 16px 0 10px; }
+  .brand { padding: 0 16px 12px; }
+  .brand h1 { font-size: 22px; }
+  .menu { flex-direction: row; overflow-x: auto; gap: 6px; margin-top: 12px; padding: 0 16px 4px; }
+  .menu a { white-space: nowrap; border-left: 0; border-bottom: 3px solid transparent; }
+  .menu a[aria-current="page"] { border-bottom-color: var(--accent); }
+  .menu .sub { display: none; }
+  .menu li.full + li:not(.full) { margin: 0; padding: 0; border: 0; }
+  /* 모바일: 로고는 메뉴 아래에 작게 */
+  .sidebar-foot { margin: 0; padding: 10px 16px 0; }
+  .main { padding-top: 18px; }
+  .piece-title h2 { font-size: 22px; }
+}
