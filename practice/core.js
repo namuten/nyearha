@@ -54,7 +54,7 @@ export function beatMs(measures, seconds, beats, measureNo, rate) {
 export function measureProgress(measures, seconds, ms) {
   let index = -1;
   for (let i = 0; i < measures.length; i++) {
-    if (measures[i] <= ms) index = i;
+    if (measures[i] <= ms + 2) index = i;
     else break;
   }
   if (index < 0) return { index: -1, ratio: 0 };

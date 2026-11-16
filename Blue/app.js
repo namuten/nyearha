@@ -3,9 +3,10 @@
   const audio = $("audio"), play = $("play"), seek = $("seek"), time = $("time"), pagesEl = $("pages");
   const fmt = (s) => !isFinite(s) ? "0:00" : `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 
-  let pieces, cur = null, curMeasure = -1, curRow = "", raf = 0;
+  const V = "?v=20261116c";
+  let pieces, cur = null, curMeasure = -1, curRow = "", raf = 0, pendingSeekSec = null;
   try {
-    pieces = await (await fetch("manifest.json")).json();
+    pieces = await (await fetch("manifest.json" + V, { cache: "no-cache" })).json();
   } catch (e) {
     $("title").textContent = "목록을 불러오지 못했어요";
     return;
@@ -39,7 +40,7 @@
   function measureAt(ms) {
     const ms_ = cur.measures;
     let i = -1;
-    for (let k = 0; k < ms_.length && ms_[k].ms <= ms; k++) i = k;
+    for (let k = 0; k < ms_.length && ms_[k].ms <= ms + 2; k++) i = k;
     return i;
   }
 
@@ -77,9 +78,10 @@
   }
 
   function tick() {
-    placeMarker(measureAt(audio.currentTime * 1000));
-    if (audio.duration) seek.value = (audio.currentTime / audio.duration) * 100;
-    time.textContent = `${fmt(audio.currentTime)} / ${fmt(audio.duration || cur.seconds)}`;
+    const curSec = pendingSeekSec !== null ? pendingSeekSec : audio.currentTime;
+    placeMarker(measureAt(curSec * 1000));
+    if (audio.duration) seek.value = (curSec / audio.duration) * 100;
+    time.textContent = `${fmt(curSec)} / ${fmt(audio.duration || cur.seconds)}`;
     if (!audio.paused) raf = requestAnimationFrame(tick);
   }
 
@@ -95,32 +97,47 @@
     const i = cur.measures.findIndex((m) => m.page === pi &&
       x >= m.l && x <= m.l + m.w && y >= m.t - pad && y <= m.t + m.h + pad);
     if (i < 0) return;
-    audio.currentTime = cur.measures[i].ms / 1000;
+    const targetSec = cur.measures[i].ms / 1000;
+    if (audio.readyState > 0) {
+      pendingSeekSec = null;
+      audio.currentTime = targetSec;
+    } else {
+      pendingSeekSec = targetSec;
+    }
     curMeasure = -1;
-    tick();
+    placeMarker(i);
     audio.play();
+  });
+
+  audio.addEventListener("loadedmetadata", () => {
+    if (pendingSeekSec !== null) {
+      const sec = pendingSeekSec;
+      pendingSeekSec = null;
+      audio.currentTime = sec;
+    }
   });
 
   // ---------- 화면 전환 ----------
   function show(id) {
     const p = pieces.find((x) => x.id === id) || pieces[0];
     cur = p;
+    pendingSeekSec = null;
     document.querySelectorAll(".menu a").forEach((a) => a.removeAttribute("aria-current"));
     document.querySelector(`.menu a[data-id="${p.id}"]`).setAttribute("aria-current", "page");
     document.title = `${p.label} · 그대 안의 블루`;
     $("title").textContent = p.label;
     $("desc").textContent = p.desc;
-    $("dl-pdf").href = p.pdf;
-    $("dl-mp3").href = p.mp3;
+    $("dl-pdf").href = p.pdf + V;
+    $("dl-mp3").href = p.mp3 + V;
 
     audio.pause();
-    audio.src = p.mp3;
+    audio.src = p.mp3 + V;
     audio.load();
     seek.value = 0;
     time.textContent = `0:00 / ${fmt(p.seconds)}`;
 
     pagesEl.innerHTML = p.pages.map((src, i) =>
-      `<div class="page"><img src="${src}" alt="${p.label} 악보 ${i + 1}쪽" loading="${i ? "lazy" : "eager"}">` +
+      `<div class="page"><img src="${src}${V}" alt="${p.label} 악보 ${i + 1}쪽" loading="${i ? "lazy" : "eager"}">` +
       (i === 0 ? `<div class="title-cover"></div><div class="title-art"><img src="logo.png" alt=""><span>그대 안의<br>블루</span></div>` : "") +
       `</div>`).join("");
     curMeasure = -1; curRow = "";

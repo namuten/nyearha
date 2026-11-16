@@ -1,5 +1,5 @@
 // 손가락 연습 화면. 순수 로직은 core.js, 여기는 DOM·오디오만.
-import { noteIndexAt, nextPlayedIndex, keyChanges, solfege, loopBounds, beatMs, measureProgress } from "./core.js?v=2";
+import { noteIndexAt, nextPlayedIndex, keyChanges, solfege, loopBounds, beatMs, measureProgress } from "./core.js?v=20261116b";
 
 const $ = (id) => document.getElementById(id);
 const audio = $("audio");
@@ -34,8 +34,10 @@ audio.preservesPitch = true;
 audio.mozPreservesPitch = true;
 audio.webkitPreservesPitch = true;
 
+const V = "?v=20261116c";
 let pieces = [];
 let data = null;            // data/<id>.json
+let pendingSeekSec = null;
 let labels = {};            // keyId -> 한국어 라벨
 let keyEls = {};            // keyId -> SVG 요소
 let blocks = [];            // 타임라인 음 블록 (notes와 같은 index)
@@ -194,7 +196,14 @@ audio.addEventListener("ended", () => {
   syncPlayButton();
 });
 audio.addEventListener("seeked", () => render(true));
-audio.addEventListener("loadedmetadata", () => render(true));
+audio.addEventListener("loadedmetadata", () => {
+  if (pendingSeekSec !== null) {
+    const sec = pendingSeekSec;
+    pendingSeekSec = null;
+    audio.currentTime = sec;
+  }
+  render(true);
+});
 
 document.addEventListener("keydown", (e) => {
   if (e.code !== "Space") return;
@@ -355,13 +364,20 @@ scorePagesEl.addEventListener("click", (e) => {
   );
   if (i < 0) return;
   cancelCountIn();
-  audio.currentTime = data.measures[i] / 1000;
+  const targetSec = data.measures[i] / 1000;
+  if (audio.readyState > 0) {
+    pendingSeekSec = null;
+    audio.currentTime = targetSec;
+  } else {
+    pendingSeekSec = targetSec;
+  }
   render(true);
+  if (audio.paused) playAudio();
 });
 
 function render(force) {
   if (!data) return;
-  const ms = audio.currentTime * 1000;
+  const ms = (pendingSeekSec !== null ? pendingSeekSec : audio.currentTime) * 1000;
   const notes = data.notes;
   const idx = noteIndexAt(notes, ms);
   const note = idx >= 0 ? notes[idx] : null;
@@ -429,7 +445,8 @@ new ResizeObserver(layoutTimeline).observe(timelineEl);
 
 // ---------- 불러오기 ----------
 async function getJSON(url) {
-  const r = await fetch(url, { cache: "no-cache" });
+  const sep = url.includes("?") ? "&" : "?";
+  const r = await fetch(`${url}${sep}${V.slice(1)}`, { cache: "no-cache" });
   if (!r.ok) throw new Error(`${url}: ${r.status}`);
   return r.json();
 }
@@ -514,7 +531,8 @@ async function load(id) {
   fillMeasureSelect(loopEndSel, d.measures.length, d.measures.length);
 
   seek.max = String(Math.round(d.seconds * 1000));
-  audio.src = d.mp3;
+  pendingSeekSec = null;
+  audio.src = d.mp3 + V;
   audio.playbackRate = rate;
   audio.preservesPitch = true;
   audio.currentTime = 0;
@@ -527,7 +545,7 @@ async function load(id) {
     : d.title;
   const wideCover = d.piece === "youraisemeup" ? " wide" : "";
   scorePagesEl.innerHTML = (d.pages || []).map((src, i) =>
-    `<div class="page"><img src="${src}" alt="${d.title} ${d.partLabel} 악보 ${i + 1}쪽" loading="${i ? "lazy" : "eager"}">` +
+    `<div class="page"><img src="${src}${V}" alt="${d.title} ${d.partLabel} 악보 ${i + 1}쪽" loading="${i ? "lazy" : "eager"}">` +
     (i === 0 ? `<div class="title-cover${wideCover}"></div><div class="title-art"><img src="${base}logo.png" alt=""><span>${titleArtHtml}</span></div>` : "") +
     `</div>`
   ).join("");
