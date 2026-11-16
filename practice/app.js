@@ -508,7 +508,8 @@ async function load(id) {
   if ($("dl-mp3")) $("dl-mp3").href = d.mp3;
   $("scoreLink").href = d.score;
   pieceSelect.value = id;
-  if ($("pieceSelectWrap")) $("pieceSelectWrap").hidden = pieces.length <= 1;
+  const uniqueSongs = new Set(pieces.map((p) => p.id.split("_")[0])).size;
+  if ($("pieceSelectWrap")) $("pieceSelectWrap").hidden = uniqueSongs <= 1;
   fillMeasureSelect(loopStartSel, d.measures.length, 1);
   fillMeasureSelect(loopEndSel, d.measures.length, d.measures.length);
 

@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 720" role="img" aria-labelledby="t">
+  <title id="t">C 플루트 정면 키 그림 (뵘식)</title>
+  <style>
+    /* 기본값만 — :where()라 명시도 0, 페이지 CSS(.on / .next)가 항상 이긴다 */
+    :where(.key) { fill: var(--key-fill, #ffffff); stroke: var(--key-stroke, #4a4a4a); stroke-width: 2; }
+    :where(.body) { fill: var(--body-fill, none); stroke: var(--body-stroke, #8a8a8a); stroke-width: 2; }
+    :where(.lbl) { fill: currentColor; font: 600 12px system-ui, sans-serif; pointer-events: none; }
+    :where(.small) { font-size: 10px; font-weight: 500; opacity: .75; }
+    :where(.guide) { fill: none; stroke: var(--body-stroke, #8a8a8a); stroke-width: 1; stroke-dasharray: 3 3; }
+  </style>
+
+  <!-- 몸통 (위 = 헤드조인트 / 취구) -->
+  <rect class="body" x="131" y="14" width="38" height="22" rx="8"/>
+  <rect class="body" x="129" y="36" width="42" height="92" rx="4"/>
+  <!-- 취구 (립플레이트 + 취구공) -->
+  <ellipse class="body" cx="150" cy="82" rx="18" ry="11"/>
+  <ellipse class="body" cx="150" cy="82" rx="8" ry="5"/>
+
+  <!-- 본관 (왼손 · 오른손) -->
+  <rect class="body" x="129" y="128" width="42" height="444" rx="4"/>
+  <!-- 풋조인트 -->
+  <rect class="body" x="129" y="572" width="42" height="122" rx="4"/>
+
+  <!-- 뒷면: 엄지 B♭ 레버 · 엄지 B 키 (몸통 왼쪽 옆) -->
+  <text class="lbl small" x="58" y="160" text-anchor="middle">뒷면 (엄지)</text>
+  <path class="guide" d="M84 202 H129"/>
+  <rect id="thumb_Bb" class="key" x="40" y="170" width="36" height="22" rx="6"><title>엄지 B♭ 레버 (뒷면)</title></rect>
+  <rect id="thumb" class="key" x="40" y="198" width="36" height="30" rx="8"><title>엄지 B 키 (뒷면)</title></rect>
+  <text class="lbl small" x="34" y="185" text-anchor="end">B♭</text>
+  <text class="lbl small" x="34" y="217" text-anchor="end">엄지</text>
+
+  <!-- 왼손 키 (L1 · L2 · L3) -->
+  <circle id="L1" class="key" cx="150" cy="182" r="20"><title>왼손 1 (검지)</title></circle>
+  <circle id="L2" class="key" cx="150" cy="248" r="20"><title>왼손 2 (중지)</title></circle>
+  <circle id="L3" class="key" cx="150" cy="308" r="20"><title>왼손 3 (약지)</title></circle>
+  <text class="lbl" x="118" y="186" text-anchor="end">왼1</text>
+  <text class="lbl" x="118" y="252" text-anchor="end">왼2</text>
+  <text class="lbl" x="118" y="312" text-anchor="end">왼3</text>
+
+  <!-- 왼손 새끼 G♯ 키 -->
+  <rect id="LP_Gs" class="key" x="180" y="330" width="44" height="24" rx="8"><title>왼손 새끼 G♯ 키</title></rect>
+  <text class="lbl small" x="230" y="346">왼새끼 G♯</text>
+
+  <!-- 오른손 키 (R1 · R2 · R3) -->
+  <circle id="R1" class="key" cx="150" cy="404" r="20"><title>오른손 1 (검지)</title></circle>
+  <circle id="R2" class="key" cx="150" cy="464" r="20"><title>오른손 2 (중지)</title></circle>
+  <circle id="R3" class="key" cx="150" cy="524" r="20"><title>오른손 3 (약지)</title></circle>
+  <text class="lbl" x="118" y="408" text-anchor="end">오1</text>
+  <text class="lbl" x="118" y="468" text-anchor="end">오2</text>
+  <text class="lbl" x="118" y="528" text-anchor="end">오3</text>
+
+  <!-- 트릴 키 (오른손 키 사이 옆) -->
+  <ellipse id="tr1" class="key" cx="186" cy="434" rx="8" ry="12"><title>트릴 키 1 (D)</title></ellipse>
+  <ellipse id="tr2" class="key" cx="186" cy="494" rx="8" ry="12"><title>트릴 키 2 (D♯)</title></ellipse>
+  <text class="lbl small" x="200" y="438">tr1</text>
+  <text class="lbl small" x="200" y="498">tr2</text>
+
+  <!-- 오른손 새끼키 (풋조인트: E♭ · C♯ · C) -->
+  <text class="lbl small" x="226" y="582" text-anchor="middle">오른손 새끼</text>
+  <rect id="RP_Eb" class="key" x="184" y="590" width="68" height="28" rx="8"><title>오른손 새끼 E♭ 키</title></rect>
+  <rect id="RP_Cs" class="key" x="184" y="624" width="68" height="24" rx="6"><title>오른손 새끼 C♯ 키</title></rect>
+  <rect id="RP_C" class="key" x="184" y="652" width="68" height="22" rx="6"><title>오른손 새끼 C 롤러</title></rect>
+  <text class="lbl" x="218" y="608" text-anchor="middle">E♭</text>
+  <text class="lbl small" x="218" y="640" text-anchor="middle">C♯</text>
+  <text class="lbl small" x="218" y="667" text-anchor="middle">C</text>
+</svg>

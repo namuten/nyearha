@@ -94,45 +94,49 @@ class ExtractTest(unittest.TestCase):
         self.assertEqual([g["id"] for g in got],
                          [f"{prefix}_{part}" for _, prefix, _, parts in PIECES for part in parts])
 
-    def _fingering(self):
-        return json.loads((ROOT / "practice" / "instruments" / "clarinet.json").read_text(encoding="utf-8"))
+    def _fingering(self, inst="clarinet"):
+        return json.loads((ROOT / "practice" / "instruments" / f"{inst}.json").read_text(encoding="utf-8"))
 
-    def _used_pitches(self):
+    def _used_pitches(self, inst="clarinet"):
         used = set()
         for f in sorted((ROOT / "practice" / "data").glob("*.json")):
             d = json.loads(f.read_text(encoding="utf-8"))
-            used |= {n["pitch"] for n in d["notes"] if not n["rest"]}
+            if d["instrument"] == inst:
+                used |= {n["pitch"] for n in d["notes"] if not n["rest"]}
         return used
 
     def test_fingering_covers_every_used_pitch(self):
-        notes = self._fingering()["notes"]
-        missing = sorted(self._used_pitches() - set(notes))
-        self.assertEqual(missing, [], f"clarinet.json 에 없는 음: {missing}")
+        for inst in ("clarinet", "flute"):
+            notes = self._fingering(inst)["notes"]
+            missing = sorted(self._used_pitches(inst) - set(notes))
+            self.assertEqual(missing, [], f"{inst}.json 에 없는 음: {missing}")
 
     def test_every_entry_verified_with_two_sources(self):
-        fing = self._fingering()
-        ids = {s["id"] for s in fing["sources"]}
-        bad = sorted(p for p, e in fing["notes"].items()
-                     if e.get("verified") is not True or len(set(e["src"]) & ids) < 2)
-        self.assertEqual(bad, [], f"미확인 음: {bad}")
+        for inst in ("clarinet", "flute"):
+            fing = self._fingering(inst)
+            ids = {s["id"] for s in fing["sources"]}
+            bad = sorted(p for p, e in fing["notes"].items()
+                         if e.get("verified") is not True or len(set(e["src"]) & ids) < 2)
+            self.assertEqual(bad, [], f"{inst} 미확인 음: {bad}")
 
     def test_keys_exist_in_keylist_and_svg(self):
-        fing = self._fingering()
-        key_ids = [k["id"] for k in fing["keyList"]]
-        self.assertEqual(len(key_ids), len(set(key_ids)))
-        used = set()
-        for e in fing["notes"].values():
-            used |= set(e["keys"])
-            for a in e.get("alt", []):
-                used |= set(a)
-        self.assertEqual(sorted(used - set(key_ids)), [])
-        svg = (ROOT / "practice" / "instruments" / "clarinet.svg").read_text(encoding="utf-8")
-        for k in key_ids:
-            self.assertIn(f'id="{k}"', svg)
-        self.assertIn("viewBox", svg)
-        self.assertNotRegex(svg, r"<svg[^>]*\s(width|height)=")
-        self.assertNotRegex(svg, r'class="key"[^>]*\sfill=')
-        self.assertNotRegex(svg, r'\sfill="[^"]*"[^>]*class="key"')
+        for inst in ("clarinet", "flute"):
+            fing = self._fingering(inst)
+            key_ids = [k["id"] for k in fing["keyList"]]
+            self.assertEqual(len(key_ids), len(set(key_ids)))
+            used = set()
+            for e in fing["notes"].values():
+                used |= set(e["keys"])
+                for a in e.get("alt", []):
+                    used |= set(a)
+            self.assertEqual(sorted(used - set(key_ids)), [])
+            svg = (ROOT / "practice" / "instruments" / f"{inst}.svg").read_text(encoding="utf-8")
+            for k in key_ids:
+                self.assertIn(f'id="{k}"', svg)
+            self.assertIn("viewBox", svg)
+            self.assertNotRegex(svg, r"<svg[^>]*\s(width|height)=")
+            self.assertNotRegex(svg, r'class="key"[^>]*\sfill=')
+            self.assertNotRegex(svg, r'\sfill="[^"]*"[^>]*class="key"')
 
     def test_switches_to_alt_on_same_pinky_conflict(self):
         out = apply_fingering(notes("X", "Y"), CHART)

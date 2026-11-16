@@ -10,10 +10,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 MSCORE = os.environ.get("MSCORE", "/Applications/MuseScore 4.app/Contents/MacOS/mscore")
 
-# (folder, prefix, title, [part ids]) -- pilot: Blue only; others are added later
+# (folder, prefix, title, [part ids]) -- pilot: Blue (flute + clarinet); others are added later
 PIECES = [
-    ("Blue", "blue", "그대 안의 블루", ["clarinet"]),
+    ("Blue", "blue", "그대 안의 블루", ["flute", "clarinet"]),
 ]
+
+
+def part_instrument(part):
+    return "flute" if part.startswith("flute") else "clarinet"
 
 
 def parse_notes(xml_text):
@@ -126,9 +130,10 @@ def extract_part(folder, prefix, part, tmp):
     if mpos != [m["ms"] for m in man["measures"]]:
         raise SystemExit(f"{prefix}_{part}: mpos measures differ from {folder}/manifest.json")
     mp3 = ROOT / folder / "assets" / f"{prefix}_{part}.mp3"
-    chart = json.loads((ROOT / "practice" / "instruments" / "clarinet.json").read_text(encoding="utf-8"))
+    inst = part_instrument(part)
+    chart = json.loads((ROOT / "practice" / "instruments" / f"{inst}.json").read_text(encoding="utf-8"))
     notes = apply_fingering(build_notes(onsets, spos, _mp3_ms(mp3)), chart)
-    return {"piece": prefix, "part": part, "instrument": "clarinet", "partLabel": man["label"],
+    return {"piece": prefix, "part": part, "instrument": inst, "partLabel": man["label"],
             "mp3": f"../{folder}/assets/{prefix}_{part}.mp3", "score": f"../{folder}/#{part}",
             "pages": [f"../{folder}/{p}" for p in man["pages"]],
             "seconds": man["seconds"], "beats": beats, "measures": mpos,

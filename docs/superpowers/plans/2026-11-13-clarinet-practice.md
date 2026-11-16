@@ -10,11 +10,11 @@
 
 **Spec:** `docs/superpowers/specs/2026-11-13-clarinet-practice-design.md`
 
-## 1차 실행 범위: Blue 클라리넷 시범 (사용자 결정 2026-11-13)
+## 1차 실행 범위: Blue 플루트·클라리넷 시범 (사용자 결정 2026-11-13 / 2026-11-16 플루트 추가)
 
-먼저 `blue_clarinet` 한 파트로 Task 1–6을 끝내고 사용자가 로컬에서 직접 써 본 뒤 나머지를 진행한다.
-- Task 2: `PIECES`에는 Blue만 넣는다 (`("Blue","blue","그대 안의 블루",["clarinet"])`). 나머지 4곡 행은 시범 확인 후 추가.
-- Task 3: 운지표는 Blue 클라리넷이 쓰는 기보음 14개(E3 F3 F♯3 G3 A3 B♭3 B3 C4 C♯4 D4 E4 F4 F♯4 G4)만. 테스트는 생성된 데이터 기준이라 그대로 동작.
+먼저 `Blue`의 `blue_flute`·`blue_clarinet` 두 파트로 시범을 완성하고 확인한 뒤 나머지 곡을 진행한다.
+- Task 2: `PIECES`에는 Blue의 플루트·클라리넷을 넣는다 (`("Blue","blue","그대 안의 블루",["flute","clarinet"])`).
+- Task 3: 클라리넷 운지표(`instruments/clarinet.json`, `clarinet.svg`)와 플루트 운지표(`instruments/flute.json`, `flute.svg`) 작성.
 - Task 6 브라우저 확인: blue_clarinet 하나로. Review Focus 2(쉼표로 시작)는 canon이 없으므로 시범에서는 첫 음 전(ms 음수 시크)으로 대신 확인.
 - Task 7(진입 링크·CLAUDE.md)은 시범 확인 **후**에 한다. 시범 중에는 `http://localhost:8000/practice/#blue_clarinet`으로 연다.
 
