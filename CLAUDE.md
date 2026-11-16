@@ -13,6 +13,7 @@ GitHub Pages로 배포되는 개인 저장소 (https://namuten.github.io/nyearha
 | You Raise Me Up | `YouRaiseMeUp/` | 「You Raise Me Up」 후렴 플루트·클라리넷 2중주 악보 뷰어 — canon과 같은 구조 |
 | Golden | `Golden/` | HUNTR/X 「Golden」 플루트·클라리넷 2중주 악보 뷰어 — canon과 같은 구조 |
 | 그대 안의 블루 | `Blue/` | 김현철·이소라 「그대 안의 블루」 플루트·클라리넷 2중주 악보 뷰어 — canon과 같은 구조 |
+| 손가락 연습 | `practice/` | 악보·운지 다이어그램·타임라인 동기화 연습 화면 (현재 `Blue` 플루트·클라리넷 적용, 추후 전 곡 확장) |
 | 학습자료 | `study/` | 강동고 중간고사 대비: `범위.md`(고정 범위), `규칙.md`(STEP1~3 절차), `step*_*.md`, 대시보드 `index.html` |
 | 리포트 | `data-report/` | 데이터 시각화 리포트 |
 | (기타) | 루트 `travel_plan.html` | 강원도 가족여행 — 어디에도 링크 안 됨, 주소로만 접근 |
@@ -23,6 +24,7 @@ GitHub Pages로 배포되는 개인 저장소 (https://namuten.github.io/nyearha
 - 각 영역 페이지 맨 위에 메인으로 가는 `<a class="home-link" href="../">← 메인</a>`이 있다 (영역 밖을 가리키는 유일한 `../`).
   새 악보 페이지도 canon처럼 사이드바 `.brand` 맨 위에 넣는다.
 - `canon/`, `Godfather/`, `YouRaiseMeUp/`, `Golden/`, `Blue/` 안의 경로는 모두 폴더 내부 상대경로 (`../` 참조, 루트와 공유하는 CSS/JS 없음).
+  - **예외**: 악보 페이지 왼쪽 메뉴의 연습 링크(`../practice/#<piece>_<part>`)와, `practice/`가 각 악보 폴더의 `assets/`(MP3, 악보 PNG), `logo.png`, `pattern.svg`, `manifest.json`을 **읽기 전용**으로 참조하는 것만 허용한다.
 
 ## Git 작업 방식
 
@@ -159,7 +161,7 @@ GitHub Pages로 배포되는 개인 저장소 (https://namuten.github.io/nyearha
 - 선율 원본: 사용자가 준 리드시트 `source/김현철,이소라-그대안의블루.jpg`(커밋 안 함). 1절+후렴 그대로, 조도 악보대로
   (1–9 F장조, 10부터 B♭장조).
 - 페이지는 Golden 것을 복사해 제목만 바꿈 (`.title-cover`도 Golden 값, 렌즈 안 제목은 두 줄).
-- 메뉴: 합주(총보) → 플루트 → 클라리넷. 파일 `assets/blue_<id>.pdf|mp3`, `assets/png/blue_<id>-<쪽>.png`.
+- 메뉴: 합주(총보) → (구분선) → 플루트 · 클라리넷 → (구분선) → 플루트 연습 · 클라리넷 연습. 파일 `assets/blue_<id>.pdf|mp3`, `assets/png/blue_<id>-<쪽>.png`.
 
 ### 음악 구성
 - 1–4 전주(B♭M7–C, 3마디 플루트 연결구, mp) · A(5–9) "난 난 눈을 감아요" · B(10–15) "저 파란 어둠 속에서" (mf) ·
@@ -171,3 +173,51 @@ GitHub Pages로 배포되는 개인 저장소 (https://namuten.github.io/nyearha
 ### 악보·음원 원본 — `Blue/source/`
 - 구성은 Golden과 같음: `gen.py` · `build.sh` · `publish.py` · `mpos2json.py` · `test_gen.py`. 선율은 콘서트음으로 적음.
 - 다시 만들기: `python3 -m unittest discover -s Blue/source && bash Blue/source/build.sh && python3 Blue/source/publish.py`
+
+---
+
+## practice/ (손가락 연습)
+
+악보 읽기가 어렵거나 운지를 익혀야 하는 연주자를 위해 **악보 진행 + 실시간 악기 운지 다이어그램 + 흘러오는 음 타임라인 + 배속/구간반복/카운트인**을 한 화면에서 제공하는 선택형 연습 영역.
+- 설계 명세: `docs/superpowers/specs/2026-11-13-clarinet-practice-design.md`
+- 구현 계획 및 진행 기록: `docs/superpowers/plans/2026-11-13-clarinet-practice.md`
+
+### 현재 완료 상태 (2026-11-16, PR #8 `main` 머지 완료)
+- **적용 범위 (1차 시범 완료)**: `Blue` (그대 안의 블루) **플루트 연습(`#blue_flute`)** 및 **클라리넷 연습(`#blue_clarinet`)** 완료.
+- **확정된 UI·레이아웃 규칙 (사용자 피드백 반영 완료 — 다른 곡 확장 시 그대로 유지할 것)**:
+  1. **왼쪽 사이드바 메뉴 통합 (`.sidebar`, 폭 260px)**:
+     - 기존 악보 페이지(`Blue/`)와 `practice/` 양쪽 모두 동일한 왼쪽 메뉴 구조를 가진다.
+     - 메뉴 순서: `합주 (총보)` → *(구분선 `.menu li.full + li:not(.full)`)* → `플루트` · `클라리넷` → *(구분선 `.menu li:not(.practice) + li.practice`)* → `플루트 연습` · `클라리넷 연습`.
+  2. **메인 상단 (`.piece-head` + `.top-deck`)**:
+     - `.piece-head`: 기존 악보 뷰어와 동일한 위치·크기로 파트 연습 제목(`클라리넷 연습` / `플루트 연습`), 설명(`B♭ · 화음 반주` / `주선율`), 우측 `↓ 악보 PDF` · `↓ MP3` 다운로드 버튼 배치.
+     - `.top-deck`: 상단 고정 전폭 **흘러오는 음 타임라인(`.timeline`)** (과거 1초·미래 4초, 마디선 번호 및 음 길이 블록 표시).
+  3. **메인 하단 2단 작업 영역 (`.workspace`)**:
+     - **좌측 (`.score-panel`)**: 파트 악보 PNG(`pages`) + 첫 페이지 상단 안경 로고 및 제목 오버레이(`.title-cover`, `.title-art`, 반드시 `position: absolute` 유지) + 현재 마디 박스(`.marker`, 마디 번호 배지) + 마디 내 진행률 채움(`.marker-fill`) 및 세로 진행 커서(`.marker-head`). 줄 변경 시 자동 스크롤, 마디 클릭 시 해당 마디 시작 위치로 즉시 이동.
+     - **우측 (`.right-col`)**:
+       - 상단 **운지 카드(`.finger-panel`)**: 카드 내부 **왼쪽**에 악기 정면 SVG(`.fingering`, 높이 `min(64vh, 620px)`), **오른쪽**에 지금/다음 계이름·기보음·운지 변경 안내(`.info`).
+       - 중단 **플레이어(`.player`)**: 1줄에 재생/정지 버튼·시크바·시간, 2줄(`.opts`)에 속도(`0.5` / `0.75` / `1.0x`)·구간 반복(시작~끝 마디, 켜기/끄기)·카운트인(예비박 켜기/끄기).
+       - 하단 **안내 문구(`.hint`)**: 단축키 및 키 색상 설명.
+
+### 파일 구조 및 파이프라인
+- `practice/index.html`, `practice/style.css`, `practice/app.js` — 연습 화면 프론트엔드 (바닐라 JS ES module).
+- `practice/core.js`, `practice/core.test.mjs` — 순수 로직 (`noteIndexAt`, `nextPlayedIndex`, `keyChanges`, `solfege`, `loopBounds`, `beatMs`, `measureProgress`) 및 단위 테스트.
+- `practice/instruments/clarinet.json`, `practice/instruments/clarinet.svg` — B♭ 클라리넷(뵘식, 기보음 기준) 운지표 및 SVG 다이어그램 (`E3`–`G4` 14개 음 검증 완료).
+- `practice/instruments/flute.json`, `practice/instruments/flute.svg` — C 플루트(뵘식, 콘서트음 기준) 운지표 및 SVG 다이어그램 (`D4`–`Bb5` 15개 음 검증 완료).
+  - **운지 작성 원칙**: 기억/추측 금지. 공개된 표준 운지표 2곳(`wfg.woodwind.org`, `phys.unsw.edu.au`)을 교차 대조하여 일치하면 `"verified": true`와 `"src": ["wfg", "unsw"]`를 기록한다.
+- `practice/source/extract.py`, `practice/source/test_extract.py` — 각 곡의 `<Folder>/source/gen.py` → MusicXML → MuseScore 4 CLI(`.spos`, `.mpos`) + `<Folder>/manifest.json` 대조 → `practice/data/<piece>_<part>.json` 및 `practice/pieces.json` 생성.
+  - 재생성 및 테스트 명령어:
+    ```bash
+    python3 practice/source/extract.py
+    python3 -m unittest discover -s practice/source -v
+    bun test practice/core.test.mjs   # 또는 node --test practice/core.test.mjs
+    ```
+
+### 다음 작업 (나머지 4곡 확장 시 할 일)
+1. **운지표 음역 추가 (`instruments/clarinet.json`, `instruments/flute.json`)**:
+   - `canon`, `Godfather`(클라 1·2, 플루트), `YouRaiseMeUp`, `Golden`에서 추가로 쓰이는 음(클라리넷 클라리온 음역 `A4`–`C#6`, 플루트 고음역 `B5`–`D6` 등)을 WFG + UNSW 2곳 대조 후 각 JSON에 추가 (`test_extract.py`의 `test_fingering_covers_every_used_pitch`가 누락된 음 목록을 정확히 출력함).
+2. **`practice/source/extract.py`의 `PIECES` 확장**:
+   - `PIECES` 리스트에 `canon`, `Godfather`, `YouRaiseMeUp`, `Golden`의 플루트·클라리넷 파트 추가 (`canon`은 `canon/source/gen.py` 실행 방식에 맞게 경로 처리) 후 `python3 practice/source/extract.py` 실행.
+3. **나머지 4곡 악보 페이지 왼쪽 메뉴 연결**:
+   - `Blue/app.js`·`Blue/style.css`와 동일하게 `canon/`, `Godfather/`, `YouRaiseMeUp/`, `Golden/`의 `style.css`에 `.menu li:not(.practice) + li.practice` 구분선 규칙을 넣고 `app.js`의 `#menu` 하단에 `<li class="practice">` 연습 링크 추가.
+   - `practice/style.css`의 `.main` 배경 패턴이나 타이틀 아트가 곡별로 맞게 동작하는지 확인 (`youraisemeup`은 `.title-cover.wide` 이미 지원됨).
+   - 루트 `index.html`의 `OTHERS` 배열에 `practice/` 진입 칩 추가 여부 확인.

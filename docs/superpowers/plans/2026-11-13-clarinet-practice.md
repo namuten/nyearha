@@ -10,13 +10,15 @@
 
 **Spec:** `docs/superpowers/specs/2026-11-13-clarinet-practice-design.md`
 
-## 1차 실행 범위: Blue 플루트·클라리넷 시범 (사용자 결정 2026-11-13 / 2026-11-16 플루트 추가)
+## 1차 실행 범위: Blue 플루트·클라리넷 시범 — ✅ 완료 및 `main` 머지됨 (2026-11-16, PR #8 `90913ce`)
 
-먼저 `Blue`의 `blue_flute`·`blue_clarinet` 두 파트로 시범을 완성하고 확인한 뒤 나머지 곡을 진행한다.
-- Task 2: `PIECES`에는 Blue의 플루트·클라리넷을 넣는다 (`("Blue","blue","그대 안의 블루",["flute","clarinet"])`).
-- Task 3: 클라리넷 운지표(`instruments/clarinet.json`, `clarinet.svg`)와 플루트 운지표(`instruments/flute.json`, `flute.svg`) 작성.
-- Task 6 브라우저 확인: blue_clarinet 하나로. Review Focus 2(쉼표로 시작)는 canon이 없으므로 시범에서는 첫 음 전(ms 음수 시크)으로 대신 확인.
-- Task 7(진입 링크·CLAUDE.md)은 시범 확인 **후**에 한다. 시범 중에는 `http://localhost:8000/practice/#blue_clarinet`으로 연다.
+- [x] `blue_flute` 및 `blue_clarinet` 두 파트 추출 완료 (`practice/data/blue_flute.json`, `practice/data/blue_clarinet.json`, `practice/pieces.json`).
+- [x] 클라리넷(`instruments/clarinet.json`, `clarinet.svg`) 및 플루트(`instruments/flute.json`, `flute.svg`) 운지표·다이어그램 작성 및 2개 출처(WFG, UNSW) 교차 검증 완료.
+- [x] UI·레이아웃 확정 (`CLAUDE.md`의 `## practice/` 절 참조):
+  - 좌측 260px 사이드바 메뉴 통합 (`합주` / 구분선 / `플루트` · `클라리넷` / 구분선 / `플루트 연습` · `클라리넷 연습`).
+  - 상단 헤더(`.piece-head` + PDF/MP3 다운로드 버튼) 및 전폭 타임라인(`.timeline`).
+  - 하단 2단 `.workspace`: 좌측 `.score-panel`(안경 로고 타이틀 오버레이 + 실시간 마디 박스·내부 진행 커서 + 클릭 이동), 우측 `.right-col`(운지 카드 내 좌측 악기 SVG + 우측 계이름/운지 안내, 하단 플레이어·속도·구간반복·카운트인·안내 문구).
+- [ ] **2차 작업 (다음 세션 진행 대상)**: 나머지 4곡(`canon`, `Godfather`, `YouRaiseMeUp`, `Golden`) 플루트·클라리넷 파트 확장 및 각 곡 왼쪽 메뉴 연결 (상세 절차는 루트 `CLAUDE.md` 하단 `### 다음 작업` 참조).
 
 ## Global Constraints
 
