@@ -3,107 +3,529 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>nyearha</title>
+<title>nyearha — Chamber Archive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400;1,600&family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #f4f1ea;
-    --panel: #fbfaf7;
-    --ink: #1f1c18;
-    --dim: #6b6458;
-    --line: #e2dcd0;
-    --accent: #9b3d2c;
-    --shadow: 0 1px 2px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.08);
-    --shadow-hover: 0 2px 4px rgba(0,0,0,.08), 0 14px 32px rgba(0,0,0,.12);
-    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Segoe UI", sans-serif;
+    --bg: #080709;
+    --bg-deep: #0e0c10;
+    --surface: rgba(20, 18, 22, 0.56);
+    --surface-hover: rgba(28, 24, 30, 0.74);
+    --ink: #f3ede0;
+    --ink-soft: #cfc5b3;
+    --dim: #8a8070;
+    --gold: #d5b275;
+    --gold-bright: #f2dfb3;
+    --gold-dim: rgba(213, 178, 117, 0.22);
+    --line: rgba(213, 178, 117, 0.15);
+    --line-strong: rgba(242, 223, 179, 0.48);
+    --shadow-3d:
+      0 30px 60px -15px rgba(0, 0, 0, 0.85),
+      0 0 1px 1px rgba(213, 178, 117, 0.12);
+    --shadow-3d-hover:
+      0 42px 85px -12px rgba(0, 0, 0, 0.92),
+      0 0 42px -10px rgba(213, 178, 117, 0.25);
+    --serif: "Cormorant Garamond", "Noto Serif KR", Georgia, serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    color-scheme: dark;
+  }
+
+  :root[data-theme="light"] {
+    --bg: #f4efe6;
+    --bg-deep: #e8e0d2;
+    --surface: rgba(255, 252, 245, 0.64);
+    --surface-hover: rgba(255, 253, 249, 0.86);
+    --ink: #1a1612;
+    --ink-soft: #3c342b;
+    --dim: #756a5b;
+    --gold: #8c6229;
+    --gold-bright: #5e3f14;
+    --gold-dim: rgba(140, 98, 41, 0.18);
+    --line: rgba(110, 82, 44, 0.18);
+    --line-strong: rgba(140, 98, 41, 0.52);
+    --shadow-3d:
+      0 22px 48px -16px rgba(36, 26, 14, 0.14),
+      0 0 1px 1px rgba(140, 98, 41, 0.12);
+    --shadow-3d-hover:
+      0 36px 70px -14px rgba(36, 26, 14, 0.24),
+      0 0 36px -8px rgba(140, 98, 41, 0.18);
     color-scheme: light;
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #171513;
-      --panel: #201d1a;
-      --ink: #ece7dd;
-      --dim: #a59d8f;
-      --line: #34302a;
-      --accent: #d06a52;
-      --shadow: 0 8px 24px rgba(0,0,0,.4);
-      --shadow-hover: 0 14px 32px rgba(0,0,0,.5);
-      color-scheme: dark;
-    }
-  }
+
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--ink); line-height: 1.5; }
-  main { max-width: 960px; margin: 0 auto; padding: 56px 16px 72px; }
+  html, body { min-height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.5;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
 
-  header { margin-bottom: 44px; }
-  h1 { margin: 0; font-size: 2.2rem; letter-spacing: -0.02em; }
-  header p { margin: 4px 0 0; color: var(--dim); }
+  /* 3D 어쿠스틱 공명 & 골든 스트링 캔버스 */
+  #stage-3d {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 0;
+  }
 
+  /* 미세한 콘서트홀 비네팅 오버레이 */
+  .vignette {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background: radial-gradient(circle at 50% 35%, transparent 35%, rgba(0, 0, 0, 0.45) 100%);
+  }
+  :root[data-theme="light"] .vignette {
+    background: radial-gradient(circle at 50% 35%, transparent 45%, rgba(160, 140, 110, 0.18) 100%);
+  }
+
+  main {
+    position: relative;
+    z-index: 1;
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 68px 28px 104px;
+    perspective: 1600px;
+  }
+
+  /* ── 클래식 에디토리얼 헤더 ── */
+  header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 64px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--line);
+    position: relative;
+    transform-style: preserve-3d;
+  }
+  header::after {
+    content: "";
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 140px;
+    height: 1px;
+    background: linear-gradient(90deg, var(--gold-bright), transparent);
+  }
+
+  .brand-wrap {
+    transform-style: preserve-3d;
+  }
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--serif);
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 28px;
+    height: 1px;
+    background: var(--gold);
+  }
+
+  h1 {
+    margin: 0;
+    font-family: var(--serif);
+    font-size: clamp(2.8rem, 5vw, 4.2rem);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 0.98;
+    color: var(--ink);
+  }
+  h1 em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--gold);
+    margin-left: 6px;
+    font-size: 0.88em;
+  }
+  header p {
+    margin: 12px 0 0;
+    color: var(--dim);
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+  }
+
+  .header-controls {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .theme-switch {
+    appearance: none;
+    background: var(--surface);
+    color: var(--ink-soft);
+    border: 1px solid var(--line);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-family: var(--serif);
+    font-size: 0.82rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: border-color 0.25s ease, color 0.25s ease, transform 0.25s ease;
+  }
+  .theme-switch:hover {
+    border-color: var(--gold);
+    color: var(--gold-bright);
+    transform: translateY(-2px);
+  }
+
+  /* ── 섹션 헤더 ── */
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
   h2 {
-    display: flex; align-items: center; gap: 8px;
-    margin: 0 0 16px; font-size: 1rem; font-weight: 600; color: var(--dim);
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+    font-family: var(--serif);
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
   }
-  h2 .mark { color: var(--accent); font-size: 1.2rem; }
+  h2 .mark {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--gold-bright);
+  }
+  .section-note {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 0.92rem;
+    color: var(--dim);
+  }
 
-  /* 악보 — 메인 카드 */
+  /* ── 악보 3D 스테이지 그리드 ── */
   .scores {
-    display: grid; gap: 16px;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    list-style: none; margin: 0; padding: 0;
+    display: grid;
+    gap: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    perspective: 1400px;
   }
+  .scores > li {
+    perspective: 1200px;
+  }
+
   .score {
-    display: flex; flex-direction: column; height: 100%;
-    padding: 22px 22px 20px; border-radius: 12px;
-    background: var(--panel); border: 1px solid var(--line); box-shadow: var(--shadow);
-    color: inherit; text-decoration: none;
-    border-top: 4px solid var(--accent);
-    transition: transform .15s ease, box-shadow .15s ease;
+    --rx: 0deg;
+    --ry: 0deg;
+    --tz: 0px;
+    --mx: 50%;
+    --my: 20%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 248px;
+    padding: 28px 28px 24px;
+    border-radius: 16px;
+    background: var(--surface);
+    backdrop-filter: blur(22px) saturate(135%);
+    -webkit-backdrop-filter: blur(22px) saturate(135%);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-3d);
+    color: inherit;
+    text-decoration: none;
+    transform-style: preserve-3d;
+    transform: rotateX(var(--rx)) rotateY(var(--ry)) translateZ(var(--tz));
+    transition:
+      background 0.35s ease,
+      border-color 0.35s ease,
+      box-shadow 0.35s ease;
+    will-change: transform;
   }
-  .score:hover, .score:focus-visible { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
-  .score:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-  .score .icon { font-size: 2.2rem; line-height: 1; }
-  .score .title { margin-top: 14px; font-size: 1.35rem; font-weight: 700; letter-spacing: -0.01em; }
-  .score .sub { margin-top: 2px; color: var(--dim); font-size: .93rem; }
+
+  /* 브러시드 골드 스페큘러 광택 + 미세 오선지 에칭 */
+  .score::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    background:
+      radial-gradient(
+        420px circle at var(--mx) var(--my),
+        rgba(242, 223, 179, 0.16),
+        transparent 62%
+      ),
+      repeating-linear-gradient(
+        0deg,
+        transparent 0px,
+        transparent 8px,
+        rgba(213, 178, 117, 0.045) 8px,
+        rgba(213, 178, 117, 0.045) 9px
+      );
+    background-size: 100% 100%, 100% 45px;
+    background-position: 0 0, 0 55%;
+    background-repeat: no-repeat, no-repeat;
+    pointer-events: none;
+    opacity: 0.7;
+    transition: opacity 0.35s ease;
+  }
+
+  /* 상단 황금빛 리드 라인 */
+  .score::after {
+    content: "";
+    position: absolute;
+    top: -1px;
+    left: 28px;
+    right: 28px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-bright), transparent);
+    opacity: 0.35;
+    transition: opacity 0.35s ease, left 0.35s ease, right 0.35s ease;
+  }
+
+  .score:hover,
+  .score:focus-visible {
+    background: var(--surface-hover);
+    border-color: var(--line-strong);
+    box-shadow: var(--shadow-3d-hover);
+  }
+  .score:hover::before,
+  .score:focus-visible::before {
+    opacity: 1;
+  }
+  .score:hover::after,
+  .score:focus-visible::after {
+    left: 12px;
+    right: 12px;
+    opacity: 0.95;
+  }
+  .score:focus-visible {
+    outline: 1px solid var(--gold-bright);
+    outline-offset: 4px;
+  }
+
+  /* 카드 상단: OPUS 인덱스 & 3D 음파 엠블럼 */
+  .score-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transform: translateZ(34px);
+    margin-bottom: 22px;
+  }
+  .opus-tag {
+    font-family: var(--serif);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.24em;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+
+  /* 이모지 대신 클래식 황금 음파/메달리온 (접근성용 숨김 아이콘 유지) */
+  .emblem {
+    position: relative;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: radial-gradient(circle at 30% 30%, rgba(242, 223, 179, 0.14), transparent 70%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    transition: border-color 0.35s ease, transform 0.35s ease;
+  }
+  .score:hover .emblem {
+    border-color: var(--gold-bright);
+    transform: scale(1.08) translateZ(10px);
+  }
+  .emblem svg {
+    width: 20px;
+    height: 20px;
+    stroke: var(--gold-bright);
+    stroke-width: 1.4;
+    fill: none;
+  }
+  .emblem .sr-icon {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    font-size: 0;
+  }
+
+  /* 곡 제목 & 부제 (Z축 다층 깊이) */
+  .score .title {
+    font-family: var(--serif);
+    font-size: 1.72rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.18;
+    color: var(--ink);
+    transform: translateZ(42px);
+    transition: color 0.25s ease;
+  }
+  .score:hover .title {
+    color: var(--gold-bright);
+  }
+
+  .score .sub {
+    margin-top: 8px;
+    color: var(--ink-soft);
+    font-size: 0.9rem;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    opacity: 0.85;
+    transform: translateZ(26px);
+  }
+
+  /* 하단 메타 & 미니 공명 바 */
   .score .meta {
-    margin-top: auto; padding-top: 16px;
-    font-size: .82rem; color: var(--dim); font-variant-numeric: tabular-nums;
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    color: var(--dim);
+    font-variant-numeric: tabular-nums;
+    transform: translateZ(30px);
   }
-  .score .meta::after { content: " →"; color: var(--accent); }
+  .enter-cue {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 0.92rem;
+    color: var(--gold);
+    transition: transform 0.25s ease, color 0.25s ease;
+  }
+  .score:hover .enter-cue {
+    color: var(--gold-bright);
+    transform: translateX(4px);
+  }
 
-  /* 그 밖에 — 작은 칩 */
-  .others { margin-top: 56px; padding-top: 28px; border-top: 1px solid var(--line); }
-  .chips { display: flex; flex-wrap: wrap; gap: 10px; list-style: none; margin: 0; padding: 0; }
+  /* ── 그 밖에 — 세련된 아카이브 필 ── */
+  .others {
+    margin-top: 76px;
+    padding-top: 36px;
+    border-top: 1px solid var(--line);
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
   .chip {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 9px 16px; border-radius: 999px;
-    background: var(--panel); border: 1px solid var(--line);
-    color: inherit; text-decoration: none; font-size: .95rem;
-    transition: border-color .15s ease, color .15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 22px;
+    border-radius: 999px;
+    background: var(--surface);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 0.92rem;
+    letter-spacing: 0.02em;
+    box-shadow: 0 10px 26px -10px rgba(0, 0, 0, 0.5);
+    transition:
+      transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 0.25s ease,
+      color 0.25s ease;
   }
-  .chip:hover, .chip:focus-visible { border-color: var(--accent); color: var(--accent); }
-  .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .chip small { color: var(--dim); font-size: .8rem; }
+  .chip:hover,
+  .chip:focus-visible {
+    transform: translateY(-3px);
+    border-color: var(--gold);
+    color: var(--gold-bright);
+  }
+  .chip::before {
+    content: "◇";
+    color: var(--gold);
+    font-size: 0.75rem;
+  }
+  .chip small {
+    color: var(--dim);
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 0.88rem;
+    padding-left: 8px;
+    border-left: 1px solid var(--line);
+  }
 
-  @media (max-width: 600px) {
-    main { padding-top: 36px; }
-    h1 { font-size: 1.8rem; }
-    header { margin-bottom: 32px; }
+  @media (max-width: 680px) {
+    main { padding: 40px 18px 72px; }
+    header {
+      flex-direction: column;
+      align-items: flex-start;
+      margin-bottom: 44px;
+    }
+    .section-note { display: none; }
+    .scores { grid-template-columns: 1fr; gap: 18px; }
+    .score { min-height: 215px; padding: 24px 22px 20px; }
   }
 </style>
 </head>
 <body>
+<canvas id="stage-3d" aria-hidden="true"></canvas>
+<div class="vignette" aria-hidden="true"></div>
+
 <main>
   <header>
-    <h1>nyearha</h1>
-    <p>악보와 자료 모음</p>
+    <div class="brand-wrap" id="brand-wrap">
+      <div class="eyebrow">Chamber Music &amp; Score Archive</div>
+      <h1>nyearha <em>Repertoire</em></h1>
+      <p>관악 앙상블 · 플루트 &amp; 클라리넷 실내악 아카이브</p>
+    </div>
+    <div class="header-controls">
+      <button type="button" class="theme-switch" id="theme-switch" aria-label="조명 전환">
+        Stage Light
+      </button>
+    </div>
   </header>
 
   <section aria-labelledby="scores-h">
-    <h2 id="scores-h"><span class="mark">♪</span> 악보</h2>
+    <div class="section-head">
+      <h2 id="scores-h"><span class="mark">I.</span> Repertoire</h2>
+      <span class="section-note">Select a score to enter the interactive performance view</span>
+    </div>
     <ul class="scores" id="scores"></ul>
   </section>
 
   <section class="others" aria-labelledby="others-h">
-    <h2 id="others-h">그 밖에</h2>
+    <div class="section-head">
+      <h2 id="others-h"><span class="mark">II.</span> Archive &amp; Notes</h2>
+    </div>
     <ul class="chips" id="others"></ul>
   </section>
 </main>
@@ -111,11 +533,11 @@
 <script>
   // ── 악보: 새 곡 폴더를 만들면 여기에 한 줄 추가 (위에서부터 순서대로 표시) ──
   const SCORES = [
-    { href: 'canon/',     icon: '🎺', title: 'Canon in D', sub: '파헬벨 · 관악 앙상블',            meta: '24마디 · 약 95초' },
-    { href: 'Godfather/', icon: '🎻', title: 'Intermezzo', sub: '마스카니 · 플루트·클라리넷 3중주', meta: '34마디 · 약 1분 51초' },
-    { href: 'YouRaiseMeUp/', icon: '🎶', title: 'You Raise Me Up', sub: '뢰블란 · 플루트·클라리넷 2중주', meta: '17마디 · 약 1분 11초' },
-    { href: 'Golden/',    icon: '✨', title: 'Golden', sub: 'HUNTR/X · 플루트·클라리넷 2중주', meta: '44마디 · 약 1분 35초' },
-    { href: 'Blue/',      icon: '💙', title: '그대 안의 블루', sub: '김현철·이소라 · 플루트·클라리넷 2중주', meta: '24마디 · 약 1분 32초' },
+    { href: 'canon/',        icon: '🎺', title: 'Canon in D',      sub: '파헬벨 · 관악 앙상블',                  meta: '24마디 · 약 95초' },
+    { href: 'Godfather/',    icon: '🎻', title: 'Intermezzo',      sub: '마스카니 · 플루트·클라리넷 3중주',       meta: '34마디 · 약 1분 51초' },
+    { href: 'YouRaiseMeUp/', icon: '🎶', title: 'You Raise Me Up', sub: '뢰블란 · 플루트·클라리넷 2중주',         meta: '17마디 · 약 1분 11초' },
+    { href: 'Golden/',       icon: '✨', title: 'Golden',          sub: 'HUNTR/X · 플루트·클라리넷 2중주',        meta: '44마디 · 약 1분 35초' },
+    { href: 'Blue/',         icon: '💙', title: '그대 안의 블루',    sub: '김현철·이소라 · 플루트·클라리넷 2중주',   meta: '24마디 · 약 1분 32초' },
   ];
 
   // ── 그 밖에 ──
@@ -124,20 +546,243 @@
     { href: 'data-report/', icon: '📊', title: '리포트',   sub: '데이터 시각화' },
   ];
 
+  // 클래식 기하학/음향 라인아트 엠블럼 SVG (이모지 대신 골드 에칭 아이콘 렌더링)
+  const EMBLEMS = [
+    // 1. 카논 다성부 대위법 링
+    `<svg viewBox="0 0 24 24"><circle cx="9.5" cy="12" r="5.5"/><circle cx="14.5" cy="12" r="5.5"/></svg>`,
+    // 2. 간주곡 현/음叉 공명
+    `<svg viewBox="0 0 24 24"><path d="M4 12c3-6 5-6 8 0s5 6 8 0"/><path d="M4 12c3 4 5 4 8 0s5-4 8 0" opacity=".55"/></svg>`,
+    // 3. 상승 아르페지오 하모닉
+    `<svg viewBox="0 0 24 24"><path d="M5 17L12 6l7 11"/><path d="M8 14h8"/></svg>`,
+    // 4. 골든 하모닉 스타/다이아몬드
+    `<svg viewBox="0 0 24 24"><path d="M12 3l2.6 6.4L21 12l-6.4 2.6L12 21l-2.6-6.4L3 12l6.4-2.6Z"/></svg>`,
+    // 5. 블루 듀엣 교차 선율
+    `<svg viewBox="0 0 24 24"><path d="M4 15c4-8 12-8 16 0"/><path d="M4 9c4 8 12 8 16 0"/></svg>`,
+  ];
+
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-  document.getElementById('scores').innerHTML = SCORES.map(s => `
-    <li><a class="score" href="${esc(s.href)}">
-      <span class="icon" aria-hidden="true">${s.icon}</span>
+  document.getElementById('scores').innerHTML = SCORES.map((s, idx) => {
+    const opus = `OPUS ${String(idx + 1).padStart(2, '0')}`;
+    const svg = EMBLEMS[idx % EMBLEMS.length];
+    return `
+    <li><a class="score" href="${esc(s.href)}" data-idx="${idx}">
+      <div class="score-head">
+        <span class="opus-tag">${opus}</span>
+        <span class="emblem" aria-hidden="true">${svg}<span class="sr-icon">${s.icon}</span></span>
+      </div>
       <span class="title">${esc(s.title)}</span>
       <span class="sub">${esc(s.sub)}</span>
-      <span class="meta">${esc(s.meta)}</span>
-    </a></li>`).join('');
+      <span class="meta">
+        <span>${esc(s.meta)}</span>
+        <span class="enter-cue">Score &amp; Audio →</span>
+      </span>
+    </a></li>`;
+  }).join('');
 
   document.getElementById('others').innerHTML = OTHERS.map(o => `
     <li><a class="chip" href="${esc(o.href)}">
-      <span aria-hidden="true">${o.icon}</span> ${esc(o.title)} <small>${esc(o.sub)}</small>
+      <span>${esc(o.title)}</span>
+      <small>${esc(o.sub)}</small>
     </a></li>`).join('');
+
+  // ── 테마 전환 (기본: 콘서트홀 다크 / 선택 시 파치먼트 라이트) ──
+  const root = document.documentElement;
+  const themeBtn = document.getElementById('theme-switch');
+  const savedTheme = localStorage.getItem('nyearha-classic-theme');
+  if (savedTheme === 'light' || savedTheme === 'dark') {
+    root.setAttribute('data-theme', savedTheme);
+  }
+  function updateThemeBtn() {
+    const isLight = root.getAttribute('data-theme') === 'light';
+    themeBtn.textContent = isLight ? 'Concert Dark' : 'Parchment Light';
+  }
+  updateThemeBtn();
+  themeBtn.addEventListener('click', () => {
+    const next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    root.setAttribute('data-theme', next);
+    localStorage.setItem('nyearha-classic-theme', next);
+    updateThemeBtn();
+  });
+
+  // ── 스프링 물리 기반 3D 카드 틸트 & 배경 하모닉 연동 ──
+  let activeHarmony = 0; // 카드 호버 시 배경 3D 현의 진동수·진폭 변화
+  let targetEnergy = 1.0;
+  let currentEnergy = 1.0;
+
+  const cards = Array.from(document.querySelectorAll('.score')).map(el => ({
+    el,
+    rx: 0, ry: 0, tz: 0,
+    trx: 0, try: 0, ttz: 0,
+  }));
+
+  cards.forEach((c, idx) => {
+    c.el.addEventListener('pointerenter', () => {
+      activeHarmony = idx + 1;
+      targetEnergy = 2.15;
+    });
+    c.el.addEventListener('pointermove', e => {
+      if (e.pointerType === 'touch') return;
+      const r = c.el.getBoundingClientRect();
+      const x = e.clientX - r.left;
+      const y = e.clientY - r.top;
+      const nx = (x / r.width) - 0.5;
+      const ny = (y / r.height) - 0.5;
+      c.trx = -ny * 13;
+      c.try = nx * 15;
+      c.ttz = 14;
+      c.el.style.setProperty('--mx', `${((x / r.width) * 100).toFixed(1)}%`);
+      c.el.style.setProperty('--my', `${((y / r.height) * 100).toFixed(1)}%`);
+    });
+    c.el.addEventListener('pointerleave', () => {
+      c.trx = 0;
+      c.try = 0;
+      c.ttz = 0;
+      targetEnergy = 1.0;
+    });
+  });
+
+  // ── 3D 골든 하모닉 스트링 & 콘서트홀 공명 캔버스 ──
+  (() => {
+    const canvas = document.getElementById('stage-3d');
+    const ctx = canvas.getContext('2d');
+    let W = 0, H = 0, dpr = 1;
+
+    function resize() {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      W = window.innerWidth;
+      H = window.innerHeight;
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    window.addEventListener('resize', resize, { passive: true });
+    resize();
+
+    const mouse = { x: 0, y: 0, tx: 0, ty: 0 };
+    window.addEventListener('pointermove', e => {
+      mouse.tx = (e.clientX / Math.max(W, 1) - 0.5) * 2;
+      mouse.ty = (e.clientY / Math.max(H, 1) - 0.5) * 2;
+    }, { passive: true });
+
+    // 3D 공간의 미세 골든 더스트(조명 속 금빛 입자)
+    const motes = Array.from({ length: 46 }, (_, i) => ({
+      x: (Math.random() - 0.5) * 1800,
+      y: (Math.random() - 0.5) * 1000,
+      z: Math.random() * 1100 + 80,
+      vz: -(Math.random() * 0.55 + 0.15),
+      r: Math.random() * 2.2 + 0.8,
+      phase: i * 0.7,
+    }));
+
+    const brandWrap = document.getElementById('brand-wrap');
+    let time = 0;
+
+    function tick() {
+      time += 0.014;
+      mouse.x += (mouse.tx - mouse.x) * 0.05;
+      mouse.y += (mouse.ty - mouse.y) * 0.05;
+      currentEnergy += (targetEnergy - currentEnergy) * 0.06;
+
+      // 카드 3D 스프링 보간 업데이트
+      for (const c of cards) {
+        c.rx += (c.trx - c.rx) * 0.14;
+        c.ry += (c.try - c.ry) * 0.14;
+        c.tz += (c.ttz - c.tz) * 0.14;
+        if (Math.abs(c.rx) > 0.01 || Math.abs(c.ry) > 0.01 || Math.abs(c.tz) > 0.05) {
+          c.el.style.setProperty('--rx', `${c.rx.toFixed(2)}deg`);
+          c.el.style.setProperty('--ry', `${c.ry.toFixed(2)}deg`);
+          c.el.style.setProperty('--tz', `${c.tz.toFixed(1)}px`);
+        }
+      }
+
+      if (brandWrap) {
+        brandWrap.style.transform =
+          `rotateY(${(mouse.x * 3.5).toFixed(2)}deg) rotateX(${(-mouse.y * 2.5).toFixed(2)}deg)`;
+      }
+
+      ctx.clearRect(0, 0, W, H);
+      const isLight = root.getAttribute('data-theme') === 'light';
+      const goldRGB = isLight ? '140, 98, 41' : '218, 182, 118';
+      const warmRGB = isLight ? '175, 110, 52' : '244, 224, 182';
+
+      // 3D 카메라 원근 투영 파라미터
+      const fov = 620;
+      const cx = W * 0.52 + mouse.x * 55;
+      const cy = H * 0.42 + mouse.y * 38;
+      const rotY = mouse.x * 0.28 + Math.sin(time * 0.25) * 0.08;
+      const rotX = -0.32 + mouse.y * 0.16;
+      const cosY = Math.cos(rotY), sinY = Math.sin(rotY);
+      const cosX = Math.cos(rotX), sinX = Math.sin(rotX);
+
+      function project(x, y, z) {
+        // Y축 회전 -> X축 회전 -> 원근 투영
+        const x1 = x * cosY - z * sinY;
+        const z1 = z * cosY + x * sinY;
+        const y2 = y * cosX - z1 * sinX;
+        const z2 = z1 * cosX + y * sinX + 680;
+        const scale = fov / Math.max(80, fov + z2);
+        return { sx: cx + x1 * scale, sy: cy + y2 * scale, scale, z2 };
+      }
+
+      // 1) 3D 입체 하모닉 현(Strings) 필드 — 18개의 금빛 공명 곡선
+      const STRINGS = 18;
+      const SEGMENTS = 56;
+      const freqMod = 1 + activeHarmony * 0.18;
+
+      for (let i = 0; i < STRINGS; i++) {
+        const normI = (i / (STRINGS - 1)) - 0.5;
+        const baseZ = normI * 760;
+        ctx.beginPath();
+
+        for (let s = 0; s <= SEGMENTS; s++) {
+          const u = (s / SEGMENTS) - 0.5;
+          const x = u * 1950;
+          // 양 끝이 고정된 현의 배음(Harmonic overtone) 진동 수식
+          const envelope = Math.cos(u * Math.PI);
+          const wave1 = Math.sin(u * 5.5 * freqMod + time * 1.6 + i * 0.32);
+          const wave2 = Math.cos(u * 9.0 - time * 1.1 + i * 0.55) * 0.45;
+          const y = (wave1 + wave2) * envelope * 68 * currentEnergy + normI * 110;
+
+          const p = project(x, y, baseZ);
+          if (s === 0) ctx.moveTo(p.sx, p.sy);
+          else ctx.lineTo(p.sx, p.sy);
+        }
+
+        const alpha = (1 - Math.abs(normI) * 0.75) * (isLight ? 0.22 : 0.28);
+        ctx.strokeStyle = i % 4 === 0
+          ? `rgba(${warmRGB}, ${(alpha * 1.45).toFixed(3)})`
+          : `rgba(${goldRGB}, ${alpha.toFixed(3)})`;
+        ctx.lineWidth = i % 4 === 0 ? 1.35 : 0.75;
+        ctx.stroke();
+      }
+
+      // 2) 3D 스테이지 골든 더스트(보케 입자) 투영
+      for (const m of motes) {
+        m.z += m.vz * currentEnergy;
+        if (m.z < -360) {
+          m.z = 740;
+          m.x = (Math.random() - 0.5) * 1800;
+          m.y = (Math.random() - 0.5) * 1000;
+        }
+        const floatY = m.y + Math.sin(time + m.phase) * 18;
+        const p = project(m.x, floatY, m.z);
+        const depthFade = Math.max(0, Math.min(1, (1100 - p.z2) / 900));
+        const rad = Math.max(1.2, m.r * p.scale * 2.4);
+
+        const g = ctx.createRadialGradient(p.sx, p.sy, 0, p.sx, p.sy, rad * 3.2);
+        g.addColorStop(0, `rgba(${warmRGB}, ${(depthFade * (isLight ? 0.38 : 0.55)).toFixed(3)})`);
+        g.addColorStop(1, `rgba(${goldRGB}, 0)`);
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(p.sx, p.sy, rad * 3.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      requestAnimationFrame(tick);
+    }
+    tick();
+  })();
 </script>
 </body>
 </html>
