@@ -49,3 +49,17 @@ export function beatMs(measures, seconds, beats, measureNo, rate) {
   const len = measureEnd(measures, seconds, measureNo) - measures[measureNo - 1];
   return len / beats / rate;
 }
+
+/** 현재 마디 index(첫 마디 전 -1)와 마디 내부 진행률 ratio (0..1). */
+export function measureProgress(measures, seconds, ms) {
+  let index = -1;
+  for (let i = 0; i < measures.length; i++) {
+    if (measures[i] <= ms) index = i;
+    else break;
+  }
+  if (index < 0) return { index: -1, ratio: 0 };
+  const start = measures[index];
+  const end = measureEnd(measures, seconds, index + 1);
+  const ratio = end > start ? Math.min(1, Math.max(0, (ms - start) / (end - start))) : 0;
+  return { index, ratio };
+}

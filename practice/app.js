@@ -1,5 +1,5 @@
 // 손가락 연습 화면. 순수 로직은 core.js, 여기는 DOM·오디오만.
-import { noteIndexAt, nextPlayedIndex, keyChanges, solfege, loopBounds, beatMs } from "./core.js";
+import { noteIndexAt, nextPlayedIndex, keyChanges, solfege, loopBounds, beatMs, measureProgress } from "./core.js?v=2";
 
 const $ = (id) => document.getElementById(id);
 const audio = $("audio");
@@ -9,12 +9,23 @@ const timeEl = $("time");
 const track = $("track");
 const timelineEl = track.parentElement;
 const fingeringEl = $("fingering");
+const scorePagesEl = $("scorePages");
+const nowMeasureEl = $("nowMeasure");
 const pieceSelect = $("pieceSelect");
 const loopStartSel = $("loopStart");
 const loopEndSel = $("loopEnd");
 const loopToggle = $("loopToggle");
 const countToggle = $("countToggle");
 const countInEl = $("countIn");
+
+const marker = document.createElement("div");
+marker.className = "marker";
+marker.hidden = true;
+const markerFill = document.createElement("div");
+markerFill.className = "marker-fill";
+const markerHead = document.createElement("div");
+markerHead.className = "marker-head";
+marker.append(markerFill, markerHead);
 
 const PAST_MS = 1000;   // 현재선 왼쪽(지난) 1초
 const AHEAD_MS = 4000;  // 현재선 오른쪽(다가올) 4초
@@ -30,6 +41,8 @@ let keyEls = {};            // keyId -> SVG 요소
 let blocks = [];            // 타임라인 음 블록 (notes와 같은 index)
 let pxPerMs = 0;
 let lastKey = null;         // 마지막으로 그린 상태 (index + 쉼 여부)
+let curMeasure = -2;        // 마지막으로 그린 악보 마디 index
+let curRow = "";            // 마지막으로 스크롤 맞춘 악보 줄 (page:t)
 let rate = 1;
 let loopOn = false;
 let countOn = true;
@@ -281,6 +294,71 @@ function drawState(idx, resting) {
   blocks.forEach((b, i) => b.classList.toggle("cur", i === idx && !resting));
 }
 
+function centerMarkerInScore(page, m) {
+  const sr = scorePagesEl.getBoundingClientRect();
+  const pr = page.getBoundingClientRect();
+  if (!sr.height || !pr.height) return;
+  const mid = pr.top + pr.height * ((m.t + m.h / 2) / 100);
+  const target = sr.top + sr.height / 2;
+  const delta = mid - target;
+  if (Math.abs(delta) > 8) scorePagesEl.scrollBy({ top: delta, behavior: "smooth" });
+}
+
+function updateScoreProgress(ms, force) {
+  const total = data.measures.length;
+  const { index, ratio } = measureProgress(data.measures, data.seconds, ms);
+  if (force || index !== curMeasure) {
+    curMeasure = index;
+    nowMeasureEl.textContent = index >= 0 ? `${index + 1} / ${total} 마디` : `준비 (${total} 마디)`;
+    const boxes = data.measureBoxes;
+    if (index < 0 || !boxes || !boxes[index]) {
+      marker.hidden = true;
+    } else {
+      const m = boxes[index];
+      const page = scorePagesEl.children[m.page];
+      if (page) {
+        if (marker.parentNode !== page) page.appendChild(marker);
+        Object.assign(marker.style, {
+          left: `${m.l}%`,
+          top: `calc(${m.t}% - 12px)`,
+          width: `${m.w}%`,
+          height: `calc(${m.h}% + 24px)`,
+        });
+        marker.dataset.bar = String(index + 1);
+        marker.hidden = false;
+        const row = `${m.page}:${m.t}`;
+        if (row !== curRow) {
+          curRow = row;
+          centerMarkerInScore(page, m);
+        }
+      }
+    }
+  }
+  if (!marker.hidden) {
+    const pct = `${(ratio * 100).toFixed(2)}%`;
+    markerFill.style.width = pct;
+    markerHead.style.left = pct;
+  }
+}
+
+scorePagesEl.addEventListener("click", (e) => {
+  if (!data || !data.measureBoxes) return;
+  const page = e.target.closest(".page");
+  if (!page) return;
+  const pi = [...scorePagesEl.children].indexOf(page);
+  const rect = page.getBoundingClientRect();
+  const x = ((e.clientX - rect.left) / rect.width) * 100;
+  const y = ((e.clientY - rect.top) / rect.height) * 100;
+  const pad = (12 / rect.height) * 100;
+  const i = data.measureBoxes.findIndex((m) =>
+    m.page === pi && x >= m.l && x <= m.l + m.w && y >= m.t - pad && y <= m.t + m.h + pad
+  );
+  if (i < 0) return;
+  cancelCountIn();
+  audio.currentTime = data.measures[i] / 1000;
+  render(true);
+});
+
 function render(force) {
   if (!data) return;
   const ms = audio.currentTime * 1000;
@@ -293,6 +371,7 @@ function render(force) {
     lastKey = key;
     drawState(idx, resting);
   }
+  updateScoreProgress(ms, force);
   // 매 프레임: 남은 길이 막대 · 타임라인 위치 · 시간
   const frac = resting ? 0 : Math.min(1, Math.max(0, (note.end - ms) / (note.end - note.ms)));
   $("remainBar").style.transform = `scaleX(${frac})`;
@@ -350,7 +429,7 @@ new ResizeObserver(layoutTimeline).observe(timelineEl);
 
 // ---------- 불러오기 ----------
 async function getJSON(url) {
-  const r = await fetch(url);
+  const r = await fetch(url, { cache: "no-cache" });
   if (!r.ok) throw new Error(`${url}: ${r.status}`);
   return r.json();
 }
@@ -359,7 +438,7 @@ async function loadInstrument(name) {
   if (!instrumentCache[name]) {
     instrumentCache[name] = Promise.all([
       getJSON(`instruments/${name}.json`),
-      fetch(`instruments/${name}.svg`).then((r) => {
+      fetch(`instruments/${name}.svg`, { cache: "no-cache" }).then((r) => {
         if (!r.ok) throw new Error(`instruments/${name}.svg: ${r.status}`);
         return r.text();
       }),
@@ -372,6 +451,36 @@ function fillMeasureSelect(sel, n, value) {
   sel.textContent = "";
   for (let i = 1; i <= n; i++) sel.append(new Option(String(i), String(i)));
   sel.value = String(value);
+}
+
+async function buildSidebarMenu(d, id) {
+  const menuEl = $("menu");
+  const base = d.score.split("#")[0];
+  let scoreItems = [];
+  try {
+    scoreItems = await getJSON(`${base}manifest.json`);
+  } catch {
+    scoreItems = [];
+  }
+  if (menuEl) {
+    const samePiecePractice = pieces.filter((p) => p.id.startsWith(`${d.piece}_`));
+    menuEl.innerHTML =
+      scoreItems.map((p) => `
+        <li class="${p.id.startsWith("full_score") ? "full" : ""}">
+          <a href="${base}#${p.id}">
+            <span class="name">${p.label}</span>
+            <span class="sub">${p.desc}${p.seconds ? " · " + fmt(p.seconds) : ""}</span>
+          </a>
+        </li>`).join("") +
+      samePiecePractice.map((p) => `
+        <li class="practice">
+          <a href="#${p.id}"${p.id === id ? ' aria-current="page"' : ""}>
+            <span class="name">${p.partLabel} 연습</span>
+            <span class="sub">운지 · 타임라인 · 구간 반복</span>
+          </a>
+        </li>`).join("");
+  }
+  return { base, partMeta: scoreItems.find((p) => p.id === d.part) || null };
 }
 
 async function load(id) {
@@ -388,10 +497,18 @@ async function load(id) {
   keyEls = {};
   fingeringEl.querySelectorAll(".key[id]").forEach((el) => { keyEls[el.id] = el; });
 
-  document.title = `손가락 연습 · ${d.title} · ${d.partLabel}`;
-  $("pieceTitle").textContent = `${d.title} · ${d.partLabel}`;
+  const { base, partMeta } = await buildSidebarMenu(d, id);
+  if (token !== loadToken) return;
+
+  document.title = `${d.partLabel} 연습 · ${d.title}`;
+  $("pieceTitle").textContent = d.title;
+  if ($("title")) $("title").textContent = `${d.partLabel} 연습`;
+  if ($("desc")) $("desc").textContent = partMeta ? partMeta.desc : `${d.title} · 운지 연습`;
+  if ($("dl-pdf") && partMeta) $("dl-pdf").href = `${base}${partMeta.pdf}`;
+  if ($("dl-mp3")) $("dl-mp3").href = d.mp3;
   $("scoreLink").href = d.score;
   pieceSelect.value = id;
+  if ($("pieceSelectWrap")) $("pieceSelectWrap").hidden = pieces.length <= 1;
   fillMeasureSelect(loopStartSel, d.measures.length, 1);
   fillMeasureSelect(loopEndSel, d.measures.length, d.measures.length);
 
@@ -401,6 +518,19 @@ async function load(id) {
   audio.preservesPitch = true;
   audio.currentTime = 0;
   lastKey = null;
+  curMeasure = -2;
+  curRow = "";
+  marker.hidden = true;
+  const titleArtHtml = d.piece === "blue" ? "그대 안의<br>블루"
+    : d.piece === "youraisemeup" ? "You Raise<br>Me Up"
+    : d.title;
+  const wideCover = d.piece === "youraisemeup" ? " wide" : "";
+  scorePagesEl.innerHTML = (d.pages || []).map((src, i) =>
+    `<div class="page"><img src="${src}" alt="${d.title} ${d.partLabel} 악보 ${i + 1}쪽" loading="${i ? "lazy" : "eager"}">` +
+    (i === 0 ? `<div class="title-cover${wideCover}"></div><div class="title-art"><img src="${base}logo.png" alt=""><span>${titleArtHtml}</span></div>` : "") +
+    `</div>`
+  ).join("");
+  scorePagesEl.scrollTop = 0;
   buildTimeline();
   syncPlayButton();
 }

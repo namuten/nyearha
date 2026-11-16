@@ -68,17 +68,19 @@ class ExtractTest(unittest.TestCase):
 
     def test_every_part_matches_manifest_measures(self):
         for folder, prefix, title, parts in PIECES:
-            man = {p["id"]: p for p in json.load(open(ROOT / folder / "manifest.json", encoding="utf-8"))}
+            man = {p["id"]: p for p in json.loads((ROOT / folder / "manifest.json").read_text(encoding="utf-8"))}
             for part in parts:
-                d = json.load(open(ROOT / "practice" / "data" / f"{prefix}_{part}.json", encoding="utf-8"))
+                d = json.loads((ROOT / "practice" / "data" / f"{prefix}_{part}.json").read_text(encoding="utf-8"))
                 self.assertEqual(d["measures"], [m["ms"] for m in man[part]["measures"]])
+                self.assertEqual(d["measureBoxes"], man[part]["measures"])
+                self.assertEqual(d["pages"], [f"../{folder}/{p}" for p in man[part]["pages"]])
                 self.assertEqual(d["seconds"], man[part]["seconds"])
                 self.assertEqual(d["partLabel"], man[part]["label"])
 
     def test_notes_monotonic_and_inside_audio(self):
         for folder, prefix, title, parts in PIECES:
             for part in parts:
-                d = json.load(open(ROOT / "practice" / "data" / f"{prefix}_{part}.json", encoding="utf-8"))
+                d = json.loads((ROOT / "practice" / "data" / f"{prefix}_{part}.json").read_text(encoding="utf-8"))
                 notes = d["notes"]
                 self.assertTrue(notes)
                 for a, b in zip(notes, notes[1:]):
@@ -88,17 +90,17 @@ class ExtractTest(unittest.TestCase):
                 self.assertLessEqual(notes[-1]["end"], d["seconds"] * 1000 + 1000)
 
     def test_pieces_json_lists_all_parts(self):
-        got = json.load(open(ROOT / "practice" / "pieces.json", encoding="utf-8"))
+        got = json.loads((ROOT / "practice" / "pieces.json").read_text(encoding="utf-8"))
         self.assertEqual([g["id"] for g in got],
                          [f"{prefix}_{part}" for _, prefix, _, parts in PIECES for part in parts])
 
     def _fingering(self):
-        return json.load(open(ROOT / "practice" / "instruments" / "clarinet.json", encoding="utf-8"))
+        return json.loads((ROOT / "practice" / "instruments" / "clarinet.json").read_text(encoding="utf-8"))
 
     def _used_pitches(self):
         used = set()
         for f in sorted((ROOT / "practice" / "data").glob("*.json")):
-            d = json.load(open(f, encoding="utf-8"))
+            d = json.loads(f.read_text(encoding="utf-8"))
             used |= {n["pitch"] for n in d["notes"] if not n["rest"]}
         return used
 
@@ -153,7 +155,7 @@ class ExtractTest(unittest.TestCase):
 
     def test_generated_data_has_fingering_on_every_note(self):
         for f in sorted((ROOT / "practice" / "data").glob("*.json")):
-            d = json.load(open(f, encoding="utf-8"))
+            d = json.loads(f.read_text(encoding="utf-8"))
             for n in d["notes"]:
                 if not n["rest"]:
                     self.assertIsInstance(n.get("fingering"), list, f"{f.name} m{n['measure']} {n['pitch']}")

@@ -100,8 +100,8 @@ def test_build_notes_count_mismatch_raises(self):
 - Produces:
   - `PIECES = [ (folder, prefix, title, [part_id, ...]) ]` =
     `("canon","canon","Canon in D",["clarinet"])`, `("Godfather","godfather","Intermezzo",["clarinet_1","clarinet_2"])`, `("YouRaiseMeUp","youraisemeup","You Raise Me Up",["clarinet"])`, `("Golden","golden","Golden",["clarinet"])`, `("Blue","blue","그대 안의 블루",["clarinet"])`.
-  - 데이터 JSON (spec 5.2 형식 + `beats`):
-    `{"piece","part","instrument":"clarinet","title","partLabel","mp3":"../<Folder>/assets/<prefix>_<part>.mp3","score":"../<Folder>/#<part>","seconds","beats","measures":[ms...],"notes":[{"ms","end","pitch","rest","measure"}...]}` — `partLabel`·`seconds`는 기존 `<Folder>/manifest.json`의 해당 id 항목에서.
+  - 데이터 JSON (spec 5.2 형식 + `beats`, `pages`, `measureBoxes`):
+    `{"piece","part","instrument":"clarinet","title","partLabel","mp3":"../<Folder>/assets/<prefix>_<part>.mp3","score":"../<Folder>/#<part>","pages":["../<Folder>/assets/png/<prefix>_<part>-1.png",...],"seconds","beats","measures":[ms...],"measureBoxes":[{"ms","page","l","t","w","h"},...],"notes":[{"ms","end","pitch","rest","measure"}...]}` — `partLabel`·`seconds`·`pages`·`measureBoxes`는 기존 `<Folder>/manifest.json`의 해당 id 항목에서.
   - `pieces.json`: `[{"id":"<prefix>_<part>","title","partLabel","seconds"}]` (PIECES 순서).
   - 실행: `python3 practice/source/extract.py` (MuseScore 경로는 `MSCORE` 환경변수, 기본 `/Applications/MuseScore 4.app/Contents/MacOS/mscore`).
 
@@ -223,6 +223,7 @@ def test_generated_data_has_fingering_on_every_note(self):
   - `solfege(pitch) -> string` — `"G3"→"솔"`, `"F#3"→"파♯"`, `"Bb3"→"시♭"`, `"C6"→"도"`.
   - `loopBounds(measures, seconds, start, end) -> {from, to}` (ms, 마디 번호 1부터; `end`가 마지막 마디면 `to = seconds*1000`).
   - `beatMs(measures, seconds, beats, measureNo, rate) -> number` — 그 마디 길이 / beats / rate (마지막 마디는 `seconds*1000`까지).
+  - `measureProgress(measures, seconds, ms) -> {index: number, ratio: number}` — 현재 마디 index(첫 마디 전 `-1`)와 해당 마디 내부 진행률 `0..1`.
 
 - [ ] **Step 1: 실패하는 테스트 작성** (`node:test`, `node:assert/strict`)
 
@@ -255,8 +256,11 @@ test("beat ms honours rate", () => assert.equal(beatMs([0, 4000, 8000], 14, 4, 1
 - Consumes: `pieces.json`, `data/<id>.json` (Task 2·4 형식), `instruments/clarinet.json`·`clarinet.svg` (Task 3, SVG는 fetch 후 인라인 삽입해 id로 클래스 토글), `core.js` (Task 5).
 - 딥링크 `#<id>` (예 `#blue_clarinet`), 없으면 `pieces.json` 첫 항목.
 
-화면 요소 (spec 5.4 스케치 배치, 기존 악보 페이지의 색·글꼴 톤을 따름):
-- 상단: `<a class="home-link" href="../">← 메인</a>`, 곡/파트 선택 `<select>`, "🎼 악보로 보기" (`score` 링크).
+화면 요소 (spec 5.4 스케치 배치, 기존 악보 페이지 `/Blue/#clarinet`와 상단 UI·여백·정렬 통일):
+- 좌측 사이드바(`.sidebar`, 260px): `<a class="home-link" href="../">← 메인</a>`, 곡 제목·작곡가, `#menu` (`합주` / `플루트` · `클라리넷` / `클라리넷 연습`).
+- 메인 상단: `.piece-head`(파트 연습 제목·설명, 우측 액션) → `.timeline`(전폭 흘러오는 음 타임라인).
+- 메인 하단(`.workspace`): 데스크톱 2열 상단 정렬 — 좌측 `.score-panel` 악보 패널 + 우측 `.right-col`(`.finger-panel` 운지 패널 + 하단 `.player` 재생/시크/시간·속도·구간반복·카운트인 + `.hint` 안내 문구), 모바일 상하 배치.
+- 악보 패널: `pages` PNG 렌더링 + 현재 마디 박스(`.marker`, 마디 번호 배지) + 마디 내부 진행 채움(`.marker-fill`) 및 세로 커서(`.marker-head`). 줄 변경 시 자동 스크롤, 마디 클릭 시 해당 마디 시작 시간으로 즉시 이동.
 - 운지 패널: 인라인 SVG — 현재 음 `fingering` 키에 `.on`, `keyChanges(현재, 다음)`의 press∪release 키에 `.next`. 쉼표·첫 음 전이면 `.on` 없음 + "쉬어요". 옆에 계이름(크게) + pitch(작게) + 현재 음 남은 길이 막대, "다음: 라 A3 · L3 떼기" 문구 (press/release 라벨은 `keyList.label`).
 - 타임라인: 가로, 현재선 고정, 앞 4초·뒤 1초 표시, 음 블록 폭 = 길이, 블록 안 계이름, 마디 경계선. 매 프레임 `transform`만 바꿈.
 - 플레이어: `<audio>` (`preservesPitch = true`), 재생/정지(스페이스), 시크바, 시간, 속도 버튼 0.5/0.75/1.0, 반복 시작·끝 마디 `<select>` + 켜기/끄기, 카운트인 켜기/끄기 (기본 켜짐).
@@ -278,13 +282,13 @@ test("beat ms honours rate", () => assert.equal(beatMs([0, 4000, 8000], 14, 4, 1
 
 ---
 
-### Task 7: 진입 링크 + 문서
+### Task 7: 진입 링크(왼쪽 메뉴 통합) + 문서
 
 **Files:**
 - Modify: 루트 `index.html` — `OTHERS` 배열 맨 앞에 `{ href: 'practice/', icon: '🖐', title: '손가락 연습', sub: '클라리넷 · 악보 없이 따라 하기' }`
-- Modify: `canon/index.html`, `Godfather/index.html`, `YouRaiseMeUp/index.html`, `Golden/index.html`, `Blue/index.html` — `.sidebar-foot` 맨 위에 한 줄
-  `<a class="home-link" href="../practice/#<prefix>_<part>">🖐 손가락 연습</a>` (Godfather는 `godfather_clarinet_1`). 기존 `.home-link` 스타일 재사용, CSS·app.js 무변경.
-- Modify: `CLAUDE.md` — 구조 표에 `practice/` 행, "practice/ 는 악보 폴더 assets의 MP3를 읽기만 하는 유일한 영역 간 참조" 예외, `## practice/` 절(파일 구조, 다시 만들기 `python3 -m unittest discover -s practice/source && node --test practice/core.test.mjs && python3 practice/source/extract.py`, 운지 출처·미확인 규칙, 악기 확장 방법 spec 5.6).
+- Modify: 악보 페이지(`Blue/app.js`, `Blue/style.css` 등) — 왼쪽 사이드바 `#menu` 하단에 구분선(`.menu li:not(.practice) + li.practice`)과 함께 `[클라리넷 연습]` 항목(`href="../practice/#blue_clarinet"`) 추가. 최종 메뉴 구조는 `합주` / 구분선 / `플루트`, `클라리넷` / 구분선 / (`플루트 연습` 예정), `클라리넷 연습`.
+- Modify: `practice/index.html`, `practice/style.css`, `practice/app.js` — 동일한 왼쪽 사이드바 메뉴(`#menu`)를 표시하여 악보 메뉴와 연습 메뉴 간 바로 전환 가능하게 구성.
+- Modify: `CLAUDE.md` — 구조 표에 `practice/` 행, "practice/ 는 악보 폴더 assets의 MP3·PNG를 읽기만 하는 유일한 영역 간 참조" 예외, `## practice/` 절.
 
 - [ ] **Step 1: 링크·문서 수정.**
 - [ ] **Step 2: 회귀 확인** — 브라우저: 메인 칩 → practice 열림; 악보 페이지 5개 각각 링크 → 해당 파트 연습 화면; 각 악보 페이지 재생·마디 사각형·마디 클릭 재생 그대로; 모바일 폭에서 사이드바 링크가 메뉴를 가리지 않음. `git diff --stat` 에서 악보 폴더 변경은 `index.html` 5개 각 1줄뿐.

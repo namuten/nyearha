@@ -122,15 +122,17 @@ def extract_part(folder, prefix, part, tmp):
     onsets, beats = parse_notes(xml_path.read_text(encoding="utf-8"))
     spos = parse_spos((tmp / "x.spos").read_text(encoding="utf-8"))
     mpos = parse_mpos((tmp / "x.mpos").read_text(encoding="utf-8"))
-    man = {p["id"]: p for p in json.load(open(ROOT / folder / "manifest.json", encoding="utf-8"))}[part]
+    man = {p["id"]: p for p in json.loads((ROOT / folder / "manifest.json").read_text(encoding="utf-8"))}[part]
     if mpos != [m["ms"] for m in man["measures"]]:
         raise SystemExit(f"{prefix}_{part}: mpos measures differ from {folder}/manifest.json")
     mp3 = ROOT / folder / "assets" / f"{prefix}_{part}.mp3"
-    chart = json.load(open(ROOT / "practice" / "instruments" / "clarinet.json", encoding="utf-8"))
+    chart = json.loads((ROOT / "practice" / "instruments" / "clarinet.json").read_text(encoding="utf-8"))
     notes = apply_fingering(build_notes(onsets, spos, _mp3_ms(mp3)), chart)
     return {"piece": prefix, "part": part, "instrument": "clarinet", "partLabel": man["label"],
             "mp3": f"../{folder}/assets/{prefix}_{part}.mp3", "score": f"../{folder}/#{part}",
-            "seconds": man["seconds"], "beats": beats, "measures": mpos, "notes": notes}
+            "pages": [f"../{folder}/{p}" for p in man["pages"]],
+            "seconds": man["seconds"], "beats": beats, "measures": mpos,
+            "measureBoxes": man["measures"], "notes": notes}
 
 
 def _dump(path, data):
