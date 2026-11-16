@@ -10,8 +10,8 @@ sys.path.insert(0, HERE)
 import gen  # noqa: E402
 
 ALLOWED = {48, 36, 24, 18, 12, 6, 4}          # 16분음표 없음
-C_MAJOR_PCS = {0, 2, 4, 5, 7, 9, 11}
-D_MAJOR_PCS = {2, 4, 6, 7, 9, 11, 1}
+F_MAJOR_PCS = {5, 7, 9, 10, 0, 2, 4}          # 콘서트 F장조 (F G A Bb C D E)
+G_MAJOR_PCS = {7, 9, 11, 0, 2, 4, 6}          # 클라리넷 기보 G장조 (G A B C D E F#)
 
 
 def notes(music):
@@ -32,53 +32,64 @@ def sounding(m, pos):
 
 class Score(unittest.TestCase):
     def setUp(self):
-        self.fl = gen.melody_bars()
-        self.cl = gen.clarinet()
+        self.fl = gen.flute()
+        self.cl_concert = gen.clarinet()
+        self.cl_written = gen.written(self.cl_concert)
 
     def test_shape(self):
         self.assertEqual(len(self.fl), 44)
-        self.assertEqual(len(self.cl), 44)
-        for m in self.fl + self.cl:
+        self.assertEqual(len(self.cl_concert), 44)
+        self.assertEqual(len(self.cl_written), 44)
+        for m in self.fl + self.cl_concert + self.cl_written:
             self.assertEqual(sum(d for _, d, _ in m), gen.BAR)
 
     def test_rhythms(self):
-        for music in (self.fl, self.cl):
+        for music in (self.fl, self.cl_written):
             for i, pos, p, d, tie in notes(music):
                 self.assertIn(d, ALLOWED, (i, p, d))
                 if d == 4:  # 셋잇단음표는 한 박 안에서 세 개가 한 묶음
                     self.assertIn(pos % gen.Q, {0, 4, 8}, (i, pos))
-        for i, pos, p, d, tie in notes(self.cl):
-            self.assertFalse(tie, (i, p))
 
-    def test_chorus_repeats(self):
-        self.assertEqual(self.fl[4:19], self.fl[20:35])
+    def test_call_and_response_coverage(self):
+        # 모든 마디에서 최소 한 악기는 주선율을 연주하고, 두 악기가 고르게 주선율을 나눠 가짐
+        self.assertEqual(gen.FLUTE_LEAD_BARS | gen.CLARINET_LEAD_BARS, set(range(1, 45)))
+        self.assertGreaterEqual(len(gen.FLUTE_LEAD_BARS), 20)
+        self.assertGreaterEqual(len(gen.CLARINET_LEAD_BARS), 20)
+        for i in range(1, 45):
+            if i in gen.FLUTE_LEAD_BARS and i != 38:
+                self.assertEqual(self.fl[i - 1], gen.MEL_FL[i - 1], i)
+            if i in gen.CLARINET_LEAD_BARS:
+                self.assertEqual(self.cl_concert[i - 1], gen.MEL_CL[i - 1], i)
 
     def test_flute_range(self):
         for i, pos, p, d, tie in notes(self.fl):
             if p != "r":
-                self.assertTrue(gen.midi("G4") <= gen.midi(p) <= gen.midi("D6"), (i, p))
+                self.assertTrue(gen.midi("D4") <= gen.midi(p) <= gen.midi("G5"), (i, p))
 
     def test_keys(self):
-        for music in (self.fl, self.cl):
+        for music in (self.fl, self.cl_concert):
             for i, pos, p, d, tie in notes(music):
                 if p != "r":
-                    self.assertIn(gen.midi(p) % 12, C_MAJOR_PCS, (i, p))
-        for i, pos, p, d, tie in notes(gen.written(self.cl)):
-            self.assertIn(gen.midi(p) % 12, D_MAJOR_PCS, (i, p))
-            self.assertNotIn("b", p[1:], (i, p))
+                    self.assertIn(gen.midi(p) % 12, F_MAJOR_PCS, (i, p))
+        for i, pos, p, d, tie in notes(self.cl_written):
+            if p != "r":
+                self.assertIn(gen.midi(p) % 12, G_MAJOR_PCS, (i, p))
+                self.assertNotIn("b", p[1:], (i, p))
 
     def test_clarinet_range_below_break(self):
-        for i, pos, p, d, tie in notes(gen.written(self.cl)):
-            self.assertTrue(gen.midi("E3") <= gen.midi(p) <= gen.midi("G4"), (i, p))
+        for i, pos, p, d, tie in notes(self.cl_written):
+            if p != "r":
+                self.assertTrue(gen.midi("E3") <= gen.midi(p) <= gen.midi("A4"), (i, p))
 
-    def test_clarinet_below_melody(self):
-        for i, m in enumerate(self.cl):
+    def test_clarinet_below_flute_in_concert_pitch(self):
+        for i, m in enumerate(self.cl_concert):
             pos = 0
             for p, d, _ in m:
-                for t in range(pos, pos + d):
-                    f = sounding(self.fl[i], t)
-                    if f != "r":
-                        self.assertLess(gen.midi(p), gen.midi(f), (i + 1, t, p, f))
+                if p != "r":
+                    for t in range(pos, pos + d):
+                        f = sounding(self.fl[i], t)
+                        if f != "r":
+                            self.assertLess(gen.midi(p), gen.midi(f), (i + 1, t, p, f))
                 pos += d
 
     def test_musicxml_written(self):
@@ -92,10 +103,10 @@ class Score(unittest.TestCase):
                     return f.read()
             full, fl, cl = read("full_score"), read("flute"), read("clarinet")
             self.assertIn('<part id="P2">', full)
-            self.assertIn("<fifths>0</fifths>", fl)
-            self.assertIn("<fifths>2</fifths>", cl)
+            self.assertIn("<fifths>-1</fifths>", fl)
+            self.assertIn("<fifths>1</fifths>", cl)
             self.assertIn("<transpose><diatonic>-1</diatonic><chromatic>-2</chromatic>", cl)
-            for x in (full, fl):
+            for x in (full, fl, cl):
                 self.assertIn("<per-minute>120</per-minute>", x)
                 self.assertIn('<tuplet type="start"', x)
                 self.assertIn("<fermata", x)

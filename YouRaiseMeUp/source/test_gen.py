@@ -10,7 +10,8 @@ sys.path.insert(0, HERE)
 import gen  # noqa: E402
 
 ALLOWED = {16, 12, 8, 6, 4, 2}
-BFLAT_MAJOR_PCS = {10, 0, 2, 3, 5, 7, 9}
+F_MAJOR_PCS = {5, 7, 9, 10, 0, 2, 4}          # 콘서트 F장조 (F G A Bb C D E)
+G_MAJOR_PCS = {7, 9, 11, 0, 2, 4, 6}          # 클라리넷 기보 G장조 (G A B C D E F#)
 
 
 def notes(music):
@@ -31,8 +32,9 @@ def sounding(m, pos):
 
 class Beginner(unittest.TestCase):
     def setUp(self):
-        self.fl = gen.melody_bars()
+        self.fl = gen.flute()
         self.cl = gen.clarinet()
+        self.cl_written = gen.written(self.cl)
 
     def test_shape(self):
         self.assertEqual(len(self.fl), 17)
@@ -54,30 +56,36 @@ class Beginner(unittest.TestCase):
                     self.assertEqual(d, 2, ("off-beat start", i, pos, p, d))
                     self.assertIn(m[j - 1][1], {2, 6}, (i, pos))
 
-    def test_chorus_repeats(self):
-        self.assertEqual(self.fl[1:8], self.fl[9:16])
-        self.assertEqual(self.fl[0], self.fl[8])
+    def test_call_and_response_coverage(self):
+        # 첫 반마디(도입 코드 패드)를 제외한 모든 반마디(1..31)에서 최소 한 악기는 주선율을 연주하며,
+        # 두 악기가 2마디 악구(픽업 포함 4반마디)씩 번갈아 주고받고 마지막 악구(29..31 + 17마디)에서 함께 연주함
+        self.assertEqual(gen.FLUTE_LEAD_HALVES | gen.CLARINET_LEAD_HALVES, set(range(1, 32)))
+        self.assertGreaterEqual(len(gen.FLUTE_LEAD_HALVES), 14)
+        self.assertGreaterEqual(len(gen.CLARINET_LEAD_HALVES), 14)
+        self.assertEqual(self.fl[16], [("F5", 16, False)])
+        self.assertEqual(self.cl[16], [("F4", 16, False)])
 
     def test_flute_range(self):
         for i, j, pos, p, d, tie, m in notes(self.fl):
             if p != "r":
-                self.assertTrue(gen.midi("A4") <= gen.midi(p) <= gen.midi("C6"), (i, p))
+                self.assertTrue(gen.midi("E4") <= gen.midi(p) <= gen.midi("G5"), (i, p))
 
-    def test_no_accidentals(self):
+    def test_keys(self):
         for music in (self.fl, self.cl):
             for i, j, pos, p, d, tie, m in notes(music):
                 if p != "r":
-                    self.assertIn(gen.midi(p) % 12, BFLAT_MAJOR_PCS, (i, p))
-        for i, j, pos, p, d, tie, m in notes(gen.written(self.cl)):
-            self.assertNotIn("#", p, (i, p))
-            self.assertNotIn("b", p, (i, p))
+                    self.assertIn(gen.midi(p) % 12, F_MAJOR_PCS, (i, p))
+        for i, j, pos, p, d, tie, m in notes(self.cl_written):
+            if p != "r":
+                self.assertIn(gen.midi(p) % 12, G_MAJOR_PCS, (i, p))
+                self.assertNotIn("b", p[1:], (i, p))
 
     def test_clarinet_range(self):
-        for i, j, pos, p, d, tie, m in notes(self.cl):
+        for i, j, pos, p, d, tie, m in notes(self.cl_written):
             if p != "r":
-                self.assertTrue(gen.midi("D3") <= gen.midi(p) <= gen.midi("F4"), (i, p))
+                self.assertTrue(gen.midi("E3") <= gen.midi(p) <= gen.midi("A4"), (i, p))
 
-    def test_clarinet_below_melody(self):
+    def test_clarinet_below_flute_in_concert_pitch(self):
         for i, m in enumerate(self.cl):
             pos = 0
             for p, d, _ in m:
@@ -86,14 +94,6 @@ class Beginner(unittest.TestCase):
                     if p != "r" and f != "r":
                         self.assertLess(gen.midi(p), gen.midi(f), (i + 1, t, p, f))
                 pos += d
-
-    def test_clarinet_rhythm_by_section(self):
-        for i, j, pos, p, d, tie, m in notes(self.cl):
-            if i <= 9:
-                self.assertEqual(d, 8, (i, p, d))
-            elif i <= 16:
-                self.assertEqual(d, 4, (i, p, d))
-        self.assertEqual(self.cl[16], [("Bb3", 16, False)])
 
     def test_musicxml_written(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -107,8 +107,8 @@ class Beginner(unittest.TestCase):
                     return f.read()
             full, fl, cl = read("full_score"), read("flute"), read("clarinet")
             self.assertIn('<part id="P2">', full)
-            self.assertIn("<fifths>-2</fifths>", fl)
-            self.assertIn("<fifths>0</fifths>", cl)
+            self.assertIn("<fifths>-1</fifths>", fl)
+            self.assertIn("<fifths>1</fifths>", cl)
             self.assertIn("<transpose><diatonic>-1</diatonic><chromatic>-2</chromatic>", cl)
             for x in (full, fl, cl):
                 self.assertIn("<per-minute>66</per-minute>", x)

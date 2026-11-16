@@ -13,8 +13,8 @@ from mpos2json import measures  # noqa: E402
 
 ITEMS = [  # id, 메뉴 이름, 설명
     ("full_score", "합주 (총보)", "2중주 전체 · 지휘자용"),
-    ("flute", "플루트", "주선율"),
-    ("clarinet", "클라리넷", "B♭ · 화음 반주"),
+    ("flute", "플루트", "주선율 교대 · 화음"),
+    ("clarinet", "클라리넷", "B♭ · 주선율 교대 · 반주"),
 ]
 
 os.makedirs(os.path.join(G, "assets", "png"), exist_ok=True)
