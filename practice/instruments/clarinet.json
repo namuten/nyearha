@@ -1,0 +1,344 @@
+{
+ "instrument": "clarinet",
+ "system": "boehm",
+ "pitch": "written (B♭ clarinet)",
+ "sources": [
+  {
+   "id": "wfg",
+   "url": "http://www.wfg.woodwind.org/clarinet/cl_bas_1.html",
+   "name": "The Woodwind Fingering Guide — Chalumeau Register Basic Fingering Chart for Boehm-System Clarinet"
+  },
+  {
+   "id": "unsw",
+   "url": "https://www.phys.unsw.edu.au/music/clarinet/",
+   "name": "UNSW Music Acoustics — Clarinet acoustics (per-note pages, e.g. E3.html; written pitch; legend.html)"
+  }
+ ],
+ "keyList": [
+  {
+   "id": "thumb",
+   "label": "엄지 구멍 (뒷면)"
+  },
+  {
+   "id": "reg",
+   "label": "레지스터 키 (뒷면, 엄지)"
+  },
+  {
+   "id": "LA",
+   "label": "A 키 (왼손 검지 옆)"
+  },
+  {
+   "id": "LGs",
+   "label": "G♯ 키 (왼손 검지 옆)"
+  },
+  {
+   "id": "L1",
+   "label": "왼손 1 (검지)"
+  },
+  {
+   "id": "L2",
+   "label": "왼손 2 (중지)"
+  },
+  {
+   "id": "L3",
+   "label": "왼손 3 (약지)"
+  },
+  {
+   "id": "LP_E",
+   "label": "왼손 새끼 E 키"
+  },
+  {
+   "id": "LP_F",
+   "label": "왼손 새끼 F 키"
+  },
+  {
+   "id": "LP_Fs",
+   "label": "왼손 새끼 F♯ 키"
+  },
+  {
+   "id": "LP_Cs",
+   "label": "왼손 새끼 C♯ 키"
+  },
+  {
+   "id": "RS1",
+   "label": "오른손 옆키 1"
+  },
+  {
+   "id": "RS2",
+   "label": "오른손 옆키 2"
+  },
+  {
+   "id": "RS3",
+   "label": "오른손 옆키 3"
+  },
+  {
+   "id": "RS4",
+   "label": "오른손 옆키 4"
+  },
+  {
+   "id": "R1",
+   "label": "오른손 1 (검지)"
+  },
+  {
+   "id": "R2",
+   "label": "오른손 2 (중지)"
+  },
+  {
+   "id": "R3",
+   "label": "오른손 3 (약지)"
+  },
+  {
+   "id": "RP_E",
+   "label": "오른손 새끼 E 키"
+  },
+  {
+   "id": "RP_F",
+   "label": "오른손 새끼 F 키"
+  },
+  {
+   "id": "RP_Fs",
+   "label": "오른손 새끼 F♯ 키"
+  },
+  {
+   "id": "RP_Gs",
+   "label": "오른손 새끼 G♯ 키"
+  }
+ ],
+ "notes": {
+  "E3": {
+   "keys": [
+    "thumb",
+    "L1",
+    "L2",
+    "L3",
+    "R1",
+    "R2",
+    "R3",
+    "LP_E"
+   ],
+   "alt": [
+    [
+     "thumb",
+     "L1",
+     "L2",
+     "L3",
+     "R1",
+     "R2",
+     "R3",
+     "RP_E"
+    ]
+   ],
+   "src": [
+    "wfg",
+    "unsw"
+   ],
+   "verified": true
+  },
+  "F3": {
+   "keys": [
+    "thumb",
+    "L1",
+    "L2",
+    "L3",
+    "R1",
+    "R2",
+    "R3",
+    "RP_F"
+   ],
+   "alt": [
+    [
+     "thumb",
+     "L1",
+     "L2",
+     "L3",
+     "R1",
+     "R2",
+     "R3",
+     "LP_F"
+    ]
+   ],
+   "src": [
+    "wfg",
+    "unsw"
+   ],
+   "verified": true
+  },
+  "F#3": {
+   "keys": [
+    "thumb",
+    "L1",
+    "L2",
+    "L3",
+    "R1",
+    "R2",
+    "R3",
+    "LP_Fs"
+   ],
+   "alt": [
+    [
+     "thumb",
+     "L1",
+     "L2",
+     "L3",
+     "R1",
+     "R2",
+     "R3",
+     "RP_Fs"
+    ]
+   ],
+   "src": [
+    "wfg",
+    "unsw"
+   ],
+   "verified": true
+  },
+  "G3": {
+   "keys": [
+    "thumb",
+    "L1",
+    "L2",
+    "L3",
+    "R1",
+    "R2",
+    "R3"
+   ],
+   "alt": [],
+   "src": [
+    "wfg",
+    "unsw"
+   ],
+   "verified": true
+  },
+  "A3": {
+   "keys": [
+    "thumb",
+    "L1",
+    "L2",
+    "L3",
+    "R1",
+    "R2"
+   ],
+   "alt": [],
+   "src": [
+    "wfg",
+    "unsw"
+   ],
+   "verified": true
+  },
+  "Bb3": {
+   "keys": [
+    "thumb",
+    "L1",
+    "L2",
+    "L3",
+    "R1"
+   ],
+   "alt": [],
+   "src": [
+    "wfg",
+    "unsw"
+   ],
+   "verified": true
+  },
+  "B3": {
+   "keys": [
+    "thumb",
+    "L1",
+    "L2",
+    "L3",
+    "R2"
+   ],
+   "alt": [],
+   "src": [
+    "wfg",
+    "unsw"
+   ],
+   "verified": true
+  },
+  "C4": {
+   "keys": [
+    "thumb",
+    "L1",
+    "L2",
+    "L3"
+   ],
+   "alt": [],
+   "src": [
+    "wfg",
+    "unsw"
+   ],
+   "verified": true
+  },
+  "C#4": {
+   "keys": [
+    "thumb",
+    "L1",
+    "L2",
+    "L3",
+    "LP_Cs"
+   ],
+   "alt": [],
+   "src": [
+    "wfg",
+    "unsw"
+   ],
+   "verified": true
+  },
+  "D4": {
+   "keys": [
+    "thumb",
+    "L1",
+    "L2"
+   ],
+   "alt": [],
+   "src": [
+    "wfg",
+    "unsw"
+   ],
+   "verified": true
+  },
+  "E4": {
+   "keys": [
+    "thumb",
+    "L1"
+   ],
+   "alt": [],
+   "src": [
+    "wfg",
+    "unsw"
+   ],
+   "verified": true
+  },
+  "F4": {
+   "keys": [
+    "thumb"
+   ],
+   "alt": [],
+   "src": [
+    "wfg",
+    "unsw"
+   ],
+   "verified": true
+  },
+  "F#4": {
+   "keys": [
+    "L1"
+   ],
+   "alt": [],
+   "src": [
+    "wfg",
+    "unsw"
+   ],
+   "verified": true
+  },
+  "G4": {
+   "keys": [],
+   "alt": [],
+   "src": [
+    "wfg",
+    "unsw"
+   ],
+   "verified": true
+  }
+ }
+}
