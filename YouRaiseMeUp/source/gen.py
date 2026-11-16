@@ -1,29 +1,63 @@
 #!/usr/bin/env python3
-"""You Raise Me Up (Rolf Løvland, 2002) -- chorus only, flute + B-flat clarinet duet -> MusicXML.
+"""You Raise Me Up (Rolf Løvland, 2002) -- chorus call-and-response duet, flute + B-flat clarinet -> MusicXML.
 
-Copyrighted song; published here by the user's decision (2026-11-13).
-Melody: the chorus from the G-major lead sheet the user supplied (source/*.gif), moved up a minor 3rd.
-Concert B-flat major, 4/4, quarter = 66, 17 bars, about 1:10.
+Copyrighted song; published here by the user's decision (2026-11-13, rearranged 2026-11-16).
+Melody: the chorus from the G-major lead sheet the user supplied (source/*.gif), placed in concert F major
+(clarinet written G major) so flute (concert E4-G5) and clarinet (written F#3-A4, below the break) trade every
+2-bar vocal phrase starting on each "You raise me" / "I am" pickup and unite in octaves on the final phrase.
+Concert F major, 4/4, quarter = 66, 17 bars, about 1:11.
 
-  bar   1     intro (ends with the "You raise me" pickup)   mf
-  bars  2-9   A  chorus, first time                        mf
-  bars 10-17  B  chorus, second time (climax)              f   -> 16 rit., fermata on the last note
+  bar  1b3 - 3b2   A1 "You raise me up, so I can stand on mountains"      Cl. lead (mf) / Fl. half notes (p)
+  bar  3b3 - 5b2   A2 "You raise me up, to walk on stormy seas"           Fl. lead (mf) / Cl. half notes (mp)
+  bar  5b4 - 7b2   A3 "I am strong when I am on your shoulders"           Cl. lead (mf) / Fl. half notes (mp)
+  bar  7b3 - 9b2   A4 "You raise me up, to more than I can be"            Fl. lead (mf) / Cl. half notes (mp)
+  bar  9b3 - 11b2  B1 "You raise me up, so I can stand on mountains"      Cl. lead (f)  / Fl. quarters (mf)
+  bar 11b3 - 13b2  B2 "You raise me up, to walk on stormy seas"           Fl. lead (f)  / Cl. quarters (mf)
+  bar 13b4 - 15b2  B3 "I am strong when I am on your shoulders"           Cl. lead (f)  / Fl. quarters (mf)
+  bar 15b3 - 17    B4 "You raise me up, to more than I can be"            Fl. + Cl. octave duet (f -> 16 rit., fermata)
 
 Easy rules (checked by test_gen.py):
-  original rhythm kept (eighths, dotted quarter + eighth, eighth rests) -- no ties, no 16ths, no accidentals.
-  flute concert A4-C6; clarinet written E3-G4 (concert D3-F4, below the break), written C major.
+  original rhythm kept (eighths, dotted quarter + eighth, eighth rests) -- no ties, no 16ths, no non-key accidentals.
+  flute concert E4-G5 (F major); clarinet written E3-A4 (concert D3-G4, below the break, written G major).
 
 All pitches here are CONCERT pitch; the clarinet part is written a major 2nd higher.
-Durations are in 16ths (one 4/4 bar = 16).
+Durations are in 16ths (one 4/4 bar = 16, one half-bar = 8).
 """
 import sys
 from xml.sax.saxutils import escape
 
 BAR = 16
+HALF = 8
 TEMPO = 66
+LETTERS = "CDEFGAB"
+SEMI = {"C": 0, "D": 2, "E": 4, "F": 5, "G": 7, "A": 9, "B": 11}
 
 
-# ---------------------------------------------------------------- notation
+# ---------------------------------------------------------------- notation & pitch helpers
+def split(p):
+    step, rest = p[0], p[1:]
+    alt = 0
+    while rest and rest[0] in "#b":
+        alt += 1 if rest[0] == "#" else -1
+        rest = rest[1:]
+    return step, alt, int(rest)
+
+
+def midi(p):
+    step, alt, octave = split(p)
+    return 12 * (octave + 1) + SEMI[step] + alt
+
+
+def transpose(p, letters, semis):
+    if p == "r":
+        return p
+    step, _, octave = split(p)
+    li = LETTERS.index(step) + letters
+    nstep, octave = LETTERS[li % 7], octave + li // 7
+    alt = midi(p) + semis - (12 * (octave + 1) + SEMI[nstep])
+    return nstep + ("#" * alt if alt > 0 else "b" * -alt) + str(octave)
+
+
 def bars(s):
     """'D5:4 Eb5:4 F5:8 | ...' -> [[('D5',4,False), ...], ...]"""
     out = []
@@ -41,91 +75,122 @@ def bars(s):
     return out
 
 
-# ---------------------------------------------------------------- melody (flute, concert) -- one line per bar
+def split_halves(m):
+    """Split a 16-sixteenth bar into two 8-sixteenth half-bars."""
+    h1, h2, pos = [], [], 0
+    for item in m:
+        (h1 if pos < HALF else h2).append(item)
+        pos += item[1]
+    assert sum(d for _, d, _ in h1) == HALF and sum(d for _, d, _ in h2) == HALF, m
+    return h1, h2
+
+
+# ---------------------------------------------------------------- melody (concert F major, flute register E4-G5)
 CHORUS = [
-    "Bb5:6 A5:2 A5:2 G5:2 F5:2 Eb5:2",    # up, so I can stand on
-    "F5:2 D5:2 Bb4:4 r:2 F5:2 C6:2 Bb5:2",  # mountains. You raise me
-    "Bb5:6 A5:2 A5:2 G5:2 F5:2 Eb5:2",    # up, to walk on stormy
-    "F5:8 r:4 F5:2 A5:2",                 # seas. I am
-    "Bb5:6 A5:2 A5:2 G5:2 F5:2 Eb5:2",    # strong when I am on your
-    "F5:4 Bb5:4 r:2 G5:2 F5:2 Eb5:2",     # shoulders. You raise me
-    "D5:4 r:2 F5:2 D5:2 C5:2 Bb4:2 A4:2", # up, to more than I can
+    "F5:6 E5:2 E5:2 D5:2 C5:2 Bb4:2",     # up, so I can stand on
+    "C5:2 A4:2 F4:4 r:2 C5:2 G5:2 F5:2",  # mountains. You raise me
+    "F5:6 E5:2 E5:2 D5:2 C5:2 Bb4:2",     # up, to walk on stormy
+    "C5:8 r:4 C5:2 E5:2",                 # seas. I am
+    "F5:6 E5:2 E5:2 D5:2 C5:2 Bb4:2",     # strong when I am on your
+    "C5:4 F5:4 r:2 D5:2 C5:2 Bb4:2",      # shoulders. You raise me
+    "A4:4 r:2 C5:2 A4:2 G4:2 F4:2 E4:2",  # up, to more than I can
 ]
 MELODY = (
-    ["Bb4:8 r:2 F5:2 G5:2 A5:2"]          # 1 intro -- You raise me
+    ["F4:8 r:2 C5:2 D5:2 E5:2"]           # 1 intro -- You raise me
     + CHORUS                              # 2-8  A
-    + ["Bb4:8 r:2 F5:2 G5:2 A5:2"]        # 9    be. You raise me
+    + ["F4:8 r:2 C5:2 D5:2 E5:2"]         # 9    be. You raise me
     + CHORUS                              # 10-16 B
-    + ["Bb4:16"]                          # 17   be.
+    + ["F5:16"]                           # 17   be.
 )
 
-# one chord per half bar (2 per bar)
-CHORUS_CHORDS = "Gm F7 | Bb F7 | Gm Eb | Bb F7 | Bb Eb | Bb F7 | Bb F7"
-CHORDS = "Bb F7 | " + CHORUS_CHORDS + " | Bb F7 | " + CHORUS_CHORDS + " | Bb Bb"
+# one chord per half bar (2 per bar), CONCERT F major
+CHORUS_CHORDS = "Dm C | F C | Dm Bb | F C | F Bb | F C | F C"
+CHORDS = "F C | " + CHORUS_CHORDS + " | F C | " + CHORUS_CHORDS + " | F F"
 CHART = [b.split() for b in CHORDS.split("|")]
 assert len(CHART) == len(MELODY) == 17 and all(len(b) == 2 for b in CHART)
 
-# clarinet voicings (concert, all within D3-F4): low, middle, high
-VOICE = {
-    "Bb": ("Bb3", "D4", "F4"), "Eb": ("Eb3", "G3", "Bb3"), "F7": ("F3", "A3", "Eb4"), "Gm": ("G3", "Bb3", "D4"),
+# Upper accompaniment voicings for flute (concert F major, A4-F5, always > clarinet melody E3-G4)
+VOICE_FL = {
+    "F":  ("A4", "C5", "F5"),
+    "Bb": ("Bb4", "D5", "F5"),
+    "C":  ("A4", "C5", "E5"),
+    "Dm": ("A4", "D5", "F5"),
 }
-SEMI = {"C": 0, "D": 2, "E": 4, "F": 5, "G": 7, "A": 9, "B": 11}
+# Lower accompaniment voicings for clarinet (concert F major, D3-C4 = written E3-D4, always < flute melody E4-G5)
+VOICE_CL = {
+    "F":  ("F3", "A3", "C4"),
+    "Bb": ("D3", "F3", "Bb3"),
+    "C":  ("E3", "G3", "C4"),
+    "Dm": ("D3", "F3", "A3"),
+}
+
+MEL_FL = bars(" | ".join(MELODY))
+MEL_CL = [[(transpose(p, -7, -12), d, t) for p, d, t in m] for m in MEL_FL]
+
+# Half-bar indices (0..31 for bars 1..16) where each instrument plays the lead melody:
+# Phrase handoffs occur at the pickup rest (half-bar 1, 5, 9, 13, 17, 21, 25, 29); both unite on 29..31 + bar 17.
+CLARINET_LEAD_HALVES = {1, 2, 3, 4, 9, 10, 11, 12, 17, 18, 19, 20, 25, 26, 27, 28, 29, 30, 31}
+FLUTE_LEAD_HALVES = {5, 6, 7, 8, 13, 14, 15, 16, 21, 22, 23, 24, 29, 30, 31}
 
 
-def midi(p):
-    step, rest = p[0], p[1:]
-    alt = 0
-    while rest and rest[0] in "#b":
-        alt += 1 if rest[0] == "#" else -1
-        rest = rest[1:]
-    return 12 * (int(rest) + 1) + SEMI[step] + alt
+def acc_half(voice_map, chord, section_b):
+    lo, mid, _ = voice_map[chord]
+    return [(lo, 4, False), (mid, 4, False)] if section_b else [(lo, 8, False)]
 
 
-def melody_bars():
-    return bars(" | ".join(MELODY))
-
-
-def clarinet():
-    """1-9: half notes on the chord's low note. 10-16: quarters (low, middle per half bar). 17: whole B-flat."""
+def flute():
+    """Flute in CONCERT F major (E4-G5): trades 2-bar phrases with clarinet and unites in octaves at the end."""
     out = []
     for i, chords in enumerate(CHART, start=1):
         if i == len(CHART):
-            out.append([(VOICE[chords[0]][0], 16, False)])
-        elif i <= 9:
-            out.append([(VOICE[c][0], 8, False) for c in chords])
-        else:
-            b = []
-            for c in chords:
-                lo, mid, _ = VOICE[c]
-                b += [(lo, 4, False), (mid, 4, False)]
-            out.append(b)
+            out.append(list(MEL_FL[-1]))
+            continue
+        mh1, mh2 = split_halves(MEL_FL[i - 1])
+        h1_idx, h2_idx = 2 * (i - 1), 2 * (i - 1) + 1
+        p1 = mh1 if h1_idx in FLUTE_LEAD_HALVES else acc_half(VOICE_FL, chords[0], h1_idx >= 17)
+        p2 = mh2 if h2_idx in FLUTE_LEAD_HALVES else acc_half(VOICE_FL, chords[1], h2_idx >= 17)
+        out.append(p1 + p2)
+    return out
+
+
+def clarinet():
+    """Clarinet in CONCERT F major (D3-G4, written G major E3-A4): trades 2-bar phrases with flute."""
+    out = []
+    for i, chords in enumerate(CHART, start=1):
+        if i == len(CHART):
+            out.append(list(MEL_CL[-1]))
+            continue
+        mh1, mh2 = split_halves(MEL_CL[i - 1])
+        h1_idx, h2_idx = 2 * (i - 1), 2 * (i - 1) + 1
+        p1 = mh1 if h1_idx in CLARINET_LEAD_HALVES else acc_half(VOICE_CL, chords[0], h1_idx >= 17)
+        p2 = mh2 if h2_idx in CLARINET_LEAD_HALVES else acc_half(VOICE_CL, chords[1], h2_idx >= 17)
+        out.append(p1 + p2)
     return out
 
 
 def up_major_second(p):
     """Concert -> written for B-flat clarinet (major 2nd up), spelled diatonically."""
-    if p == "r":
-        return p
-    letters = "CDEFGAB"
-    step = p[0]
-    li = letters.index(step)
-    nstep = letters[(li + 1) % 7]
-    target = midi(p) + 2
-    octave = int(p.lstrip("CDEFGAB#b")) + (1 if step == "B" else 0)
-    alt = target - (12 * (octave + 1) + SEMI[nstep])
-    return nstep + ("#" * alt if alt > 0 else "b" * -alt) + str(octave)
+    return transpose(p, 1, 2)
 
 
 def written(music):
     return [[(up_major_second(p), d, t) for p, d, t in m] for m in music]
 
 
+DYN_FL = {
+    (1, 0): "p", (3, 8): "mf", (5, 8): "mp", (7, 8): "mf",
+    (9, 8): "mf", (11, 8): "f", (13, 8): "mf", (15, 8): "f",
+}
+DYN_CL = {
+    (1, 0): "mf", (3, 8): "mp", (5, 8): "mf", (7, 8): "mp",
+    (9, 8): "f", (11, 8): "mf", (13, 8): "f",
+}
 PARTS = {
-    "flute": dict(name="Flute", abbr="Fl.", music=melody_bars(), fifths=-2, clef=("G", 2),
-                  sound="wind.flutes.flute", dyn={1: "mf", 10: "f"}),
-    "clarinet": dict(name="Clarinet in B♭", abbr="Cl.", music=written(clarinet()), fifths=0,
+    "flute": dict(name="Flute", abbr="Fl.", music=flute(), fifths=-1, clef=("G", 2),
+                  sound="wind.flutes.flute", dyn=DYN_FL),
+    "clarinet": dict(name="Clarinet in B♭", abbr="Cl.", music=written(clarinet()), fifths=1,
                      clef=("G", 2), transpose=(-1, -2, 0), sound="wind.reed.clarinet.bflat",
-                     dyn={1: "mf", 10: "f"}),
+                     dyn=DYN_CL),
 }
 REHEARSAL = {2: "A", 10: "B"}
 WORDS = {16: "rit."}
@@ -186,10 +251,10 @@ def part_xml(pid, key, top):
             out.append(direction(f'<rehearsal enclosure="square">{REHEARSAL[i]}</rehearsal>'))
         if top and i in WORDS:
             out.append(direction(f"<words>{WORDS[i]}</words>"))
-        if i in P["dyn"]:
-            out.append(direction(f'<dynamics><{P["dyn"][i]}/></dynamics>', "below"))
         pos = 0
         for j, (p, d, tie) in enumerate(m):
+            if (i, pos) in P["dyn"]:
+                out.append(direction(f'<dynamics><{P["dyn"][(i, pos)]}/></dynamics>', "below"))
             if top and (i, pos) in RIT:
                 out.append(f'<direction><direction-type><words print-object="no"> </words></direction-type>'
                            f'<offset>0</offset><sound tempo="{RIT[(i, pos)]}"/></direction>')

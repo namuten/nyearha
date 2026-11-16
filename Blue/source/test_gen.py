@@ -47,15 +47,13 @@ class Score(unittest.TestCase):
                 self.assertIn(d, ALLOWED, (i, p, d))
                 if d == 4:  # 셋잇단음표는 한 박 안에서 세 개가 한 묶음
                     self.assertIn(pos % gen.Q, {0, 4, 8}, (i, pos))
-        for i, pos, p, d, tie in notes(self.cl):
-            self.assertFalse(tie, (i, p))
-            self.assertIn(d, {48, 24, 12}, (i, p, d))   # 반주는 온·2분·4분음표만
 
     def test_ties_join_same_pitch(self):
-        flat = [(i, p, tie) for i, pos, p, d, tie in notes(self.fl)]
-        for (i, p, tie), (_, q, _) in zip(flat, flat[1:]):
-            if tie:
-                self.assertEqual(p, q, (i, p, q))
+        for music in (self.fl, self.cl):
+            flat = [(i, p, tie) for i, pos, p, d, tie in notes(music)]
+            for (i, p, tie), (_, q, _) in zip(flat, flat[1:]):
+                if tie:
+                    self.assertEqual(p, q, (i, p, q))
 
     def test_flute_melody_in_sheet_keys(self):
         for i, pos, p, d, tie in notes(self.fl):
@@ -64,26 +62,29 @@ class Score(unittest.TestCase):
                 self.assertIn(gen.midi(p) % 12, pcs, (i, p))
                 self.assertTrue(gen.midi("D4") <= gen.midi(p) <= gen.midi("Bb5"), (i, p))
 
-    def test_clarinet_chord_tones(self):
-        for i, m in enumerate(self.cl, start=1):
-            pos = 0
-            for p, d, _ in m:
-                c = gen.CHART[i - 1][0 if pos < 2 * gen.Q else 1]
-                self.assertIn(gen.midi(p) % 12, {gen.midi(n + "4") % 12 for n in gen.SPELL[c]}, (i, p, c))
-                pos += d
+    def test_call_and_response_balance(self):
+        # 클라리넷과 플루트가 모두 주선율 구간(16분음표/점음표/붙임줄 포함)을 고르게 연주하고 23-24마디에서 함께 마무리
+        cl_melody_bars = [i for i, m in enumerate(self.cl, 1) if any(d not in {48, 24, 12} or tie for _, d, tie in m)]
+        fl_melody_bars = [i for i, m in enumerate(self.fl, 1) if any(d not in {48, 24, 12} or tie for _, d, tie in m)]
+        self.assertGreaterEqual(len(cl_melody_bars), 10)
+        self.assertGreaterEqual(len(fl_melody_bars), 12)
+        self.assertEqual(self.fl[23], [("D5", 48, False)])
+        self.assertEqual(self.cl[23], [("D4", 48, False)])
 
     def test_clarinet_range_below_break(self):
         for i, pos, p, d, tie in notes(gen.written(self.cl)):
-            self.assertTrue(gen.midi("E3") <= gen.midi(p) <= gen.midi("G4"), (i, p))
+            if p != "r":
+                self.assertTrue(gen.midi("E3") <= gen.midi(p) <= gen.midi("G4"), (i, p))
 
     def test_clarinet_below_melody(self):
         for i, m in enumerate(self.cl):
             pos = 0
             for p, d, _ in m:
-                for t in range(pos, pos + d):
-                    f = sounding(self.fl[i], t)
-                    if f != "r":
-                        self.assertLess(gen.midi(p), gen.midi(f), (i + 1, t, p, f))
+                if p != "r":
+                    for t in range(pos, pos + d):
+                        f = sounding(self.fl[i], t)
+                        if f != "r":
+                            self.assertLess(gen.midi(p), gen.midi(f), (i + 1, t, p, f))
                 pos += d
 
     def test_musicxml_written(self):

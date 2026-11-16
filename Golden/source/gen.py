@@ -1,19 +1,16 @@
 #!/usr/bin/env python3
-"""Golden (HUNTR/X, KPop Demon Hunters, 2025) -- flute + B-flat clarinet duet -> MusicXML.
+"""Golden (HUNTR/X, KPop Demon Hunters, 2025) -- flute + B-flat clarinet call-and-response duet -> MusicXML.
 
-Copyrighted song; published here by the user's decision (2026-11-13).
-Melody: the user's G-major lead sheet (source/*.pdf, not committed), moved up a perfect 4th to concert C major.
-Concert C major, 4/4, quarter = 120, 44 bars, about 1:30.
+Copyrighted song; published here by the user's decision (2026-11-13, rearranged 2026-11-16).
+Melody: the user's G-major lead sheet (source/*.pdf, not committed), arranged in concert F major (clarinet written
+G major) so flute (concert D4-G5) and clarinet (written E3-A4, below the break) trade the lead melody back and forth
+like a vocal duet and unite at the climax and finale.
 
-  bars  1-4   intro  (sheet 21-24 "dreamin' hard ... we're goin'")        mp
-  bars  5-20  A  chorus, first time  (sheet 25-40)                        mf
-  bars 21-36  B  chorus, second time (climax, sheet 58-73)                f
-  bars 37-44  C  ending "gonna be, gonna be golden" (sheet 74-81)         f -> 43 rit., fermata
+  bars  1-4   intro  (1-2 Cl. lead <-> 3-4 Fl. lead, 4b3-4 together)      mf -> cresc.
+  bars  5-20  A  chorus 1 (4-bar trade: 5-8 Cl. <-> 9-12 Fl. <-> 13-16 Cl. <-> 17-20 Fl.)
+  bars 21-36  B  chorus 2 climax (21-24 Fl. <-> 25-28 Cl. <-> 29-30 Fl. <-> 31-34 Cl.+Fl. -> 35-36 Duet)
+  bars 37-44  C  ending (1-bar ping-pong: 37,39,41 Cl. <-> 38,40,42 Fl. -> 43-44 Duet, rit., fermata)
 
-Melody keeps the original rhythm (triplets, eighth anticipations); no 16ths.
-Flute concert G4-D6. Clarinet written D major, below the break: chords (A half notes, B quarters).
-
-Melody lines below are written in the SHEET key (G major) and transposed in code.
 Durations are in 12ths of a quarter (quarter = 12, eighth = 6, triplet eighth = 4, 4/4 bar = 48).
 """
 import sys
@@ -69,7 +66,7 @@ def bars(lines):
 T3 = "D5:4 D5:4 D5:4 D5:4 C5:4 C5:4"          # "gonna be, gonna be" / "you know together we're"
 INTRO = [
     "E4:12 G4:12 C5:12 B4:12",                 # dreamin' hard, we
-    "D4:12 G4:12 E5:12 D5:12",                 # came so far, now
+    "G4:12 B4:12 E5:12 D5:12",                 # came so far, now (G-B replaces D-G to stay >= written E3)
     "F#4:12 A4:12 D5:24~",                     # I be-lieve
     "D5:24 B4:6 B4:12 E5:6",                   # We're go-in'
 ]
@@ -83,11 +80,11 @@ CHORUS = [
     "C5:6 B4:12 r:6 " + T3,                    # ... Gonna be, gonna be
     "C5:6 B4:12 r:6 A4:12 B4:6 G4:6",          # golden. Oh,
     "E4:12 G4:12 C5:12 B4:12",                 # I'm done hidin',
-    "D4:12 F#4:12 E5:12 D5:12",                # now I'm shinin'
+    "F#4:12 A4:12 E5:12 D5:12",                # now I'm shinin' (F#-A replaces D-F# to stay >= written E3)
     "G4:12 B4:12 A5:12 F#5:6 G5:6~",           # like I'm born to be.
     "G5:12 E5:12 r:12 F#4:12",                 # Oh,
     "E4:12 G4:12 C5:12 B4:12",                 # our time, no
-    "D4:12 F#4:12 E5:12 D5:12",                # fears, no lies, that's
+    "F#4:12 A4:12 E5:12 D5:12",                # fears, no lies, that's
     "G4:12 B4:12 A5:12 F#5:6 G5:6~",           # who we're born to be.
 ]
 TURN = "G5:12 E5:12 B4:6 B4:12 E5:6"           # (be.) We're go-in'  -> chorus 2
@@ -99,63 +96,134 @@ ENDING = [
     A6 + " A4:6 B4:12 G4:6",                   # born to be, born to be glowin'
     A6 + " r:6 A4:6 G4:6 F#4:6",               # ... You know that
     "E4:12 G4:12 C5:12 B4:12",                 # it's our time, no
-    "D4:12 F#4:12 E5:12 D5:12",                # fears, no lies, that's
+    "F#4:12 A4:12 E5:12 D5:12",                # fears, no lies, that's
     "G4:12 B4:12 A5:12 F#5:6 G5:6~",           # who we're born to
     "G5:36 E5:12",                             # be.
 ]
 SHEET = INTRO + CHORUS + [TURN] + CHORUS + [LAST] + ENDING
 
-# one chord per half bar, CONCERT C major
-INTRO_CH = "F F | C C | G G | G Am"
-CHORUS_CH = ("F F | G G | C C | Am Am | F F | G G | C C | Am Am | "
-             "F F | G G | C C | Am Am | F F | G G | C C")
-ENDING_CH = "G C | G G | G C | G G | F F | G G | C C | F F"
-CHORDS = f"{INTRO_CH} | {CHORUS_CH} | Am Am | {CHORUS_CH} | Am G | {ENDING_CH}"
+# one chord per half bar, CONCERT F major (clarinet written G major)
+INTRO_CH = "Bb Bb | F F | C C | C Dm"
+CHORUS_CH = ("Bb Bb | C C | F F | Dm Dm | Bb Bb | C C | F F | Dm Dm | "
+             "Bb Bb | C C | F F | Dm Dm | Bb Bb | C C | F F")
+ENDING_CH = "C F | C C | C F | C C | Bb Bb | C C | F F | Bb Bb"
+CHORDS = f"{INTRO_CH} | {CHORUS_CH} | Dm Dm | {CHORUS_CH} | Dm C | {ENDING_CH}"
 CHART = [b.split() for b in CHORDS.split("|")]
 assert len(CHART) == len(SHEET) == 44 and all(len(b) == 2 for b in CHART)
 
-# clarinet voicings (concert, D3-F4 = written E3-G4, below the break): low, middle, high
-VOICE = {
-    "F": ("F3", "A3", "C4"), "C": ("E3", "G3", "C4"), "G": ("G3", "B3", "D4"), "Am": ("A3", "C4", "E4"),
+# Upper accompaniment voicings for flute (concert F major, G4-F5, always > clarinet melody D3-G4)
+VOICE_FL = {
+    "Bb": ("Bb4", "D5", "F5"),
+    "F":  ("A4", "C5", "F5"),
+    "C":  ("G4", "C5", "E5"),
+    "Dm": ("A4", "D5", "F5"),
+}
+# Lower accompaniment voicings for clarinet (concert F major, D3-C4 = written E3-D4, always < flute melody D4-G5)
+VOICE_CL = {
+    "Bb": ("D3", "F3", "Bb3"),
+    "F":  ("F3", "A3", "C4"),
+    "C":  ("E3", "G3", "C4"),
+    "Dm": ("D3", "F3", "A3"),
 }
 
+# Full reference melody in concert pitch: flute register (D4-G5) and clarinet register (D3-G4, 1 octave lower)
+MEL_FL = [[(transpose(p, -1, -2), d, t) for p, d, t in m] for m in bars(SHEET)]
+MEL_CL = [[(transpose(p, -8, -14), d, t) for p, d, t in m] for m in bars(SHEET)]
 
-def melody_bars():
-    """Flute, concert pitch: the sheet melody up a perfect 4th (G major -> C major)."""
-    return [[(transpose(p, 3, 5), d, t) for p, d, t in m] for m in bars(SHEET)]
+# Bars where each instrument takes the main melody (both play together on 35-36 and 43-44)
+FLUTE_LEAD_BARS = {3, 4, 9, 10, 11, 12, 17, 18, 19, 20, 21, 22, 23, 24, 29, 30, 35, 36, 38, 40, 42, 43, 44}
+CLARINET_LEAD_BARS = {1, 2, 5, 6, 7, 8, 13, 14, 15, 16, 25, 26, 27, 28, 31, 32, 33, 34, 35, 36, 37, 39, 41, 43, 44}
+
+
+def flute():
+    """Flute in CONCERT F major (D4-G5): alternates lead melody with clarinet and provides upper harmony/fills."""
+    out = []
+    for i, (c1, c2) in enumerate(CHART, start=1):
+        lo1, mid1, hi1 = VOICE_FL[c1]
+        lo2, mid2, hi2 = VOICE_FL[c2]
+        if i == 38:
+            # Ending ping-pong: flute plays the bar-38 triplets then adds a 2-beat answering motif
+            out.append(MEL_FL[i - 1][:-1] + [("C5", Q, False), ("A4", Q, False)])
+        elif i in FLUTE_LEAD_BARS:
+            out.append(list(MEL_FL[i - 1]))
+        elif i <= 2:
+            # Intro bars 1-2: warm harmonic pad while clarinet opens
+            out.append([(lo1, 2 * Q, False), (mid2, 2 * Q, False)])
+        elif i in (6, 7):
+            # Chorus A (bars 5-8, Cl. lead): quarter pulse on beats 1-2 filling Cl. eighth rest, half note under triplets
+            out.append([(lo1, Q, False), (mid1, Q, False), (hi2, 2 * Q, False)])
+        elif i == 8:
+            out.append([(lo1, 2 * Q, False), (mid2, Q, False), (hi2, Q, False)])
+        elif i == 16:
+            # Answering obligato fill on beat 3 where clarinet rests
+            out.append([(lo1, 2 * Q, False), (hi2, Q, False), (mid2, Q, False)])
+        elif i <= 15:
+            out.append([(lo1, 2 * Q, False), (mid2, 2 * Q, False)])
+        elif i == 25:
+            # Climax B (bars 25-28, Cl. lead): upper harmony on "Up, up, up with our"
+            out.append([("Bb4", Q, False), ("D5", Q, False), ("G5", Q, False), ("F5", Q, False)])
+        elif i == 31:
+            # Climax B ("like I'm born to be"): 3rd/6th upper harmony above clarinet lead, tied to bar 32
+            out.append([("A4", Q, False), ("C5", Q, False), ("D5", Q, False), ("C5", 6, False), ("A4", 6, True)])
+        elif i == 32:
+            out.append([("A4", Q, False), ("F4", Q, False), ("D5", Q, False), ("A4", Q, False)])
+        elif 26 <= i <= 34:
+            # Climax B driving quarter-note arpeggios while clarinet leads
+            out.append([(lo1, Q, False), (mid1, Q, False), (hi1, Q, False), (mid1, Q, False)])
+        else:
+            # Ending C odd bars (37, 39, 41) while clarinet leads
+            out.append([(lo1, 2 * Q, False), (mid2, 2 * Q, False)])
+    return out
 
 
 def clarinet():
-    """concert. 1-20: half notes (low, middle). 21-36: quarters low-middle-high-middle (two chords: low-middle each).
-    37-43: half notes low; 44: whole low under the fermata."""
+    """Clarinet in CONCERT pitch (D3-G4, written E3-A4): alternates lead melody with flute and supports underneath."""
     out = []
     for i, (c1, c2) in enumerate(CHART, start=1):
-        if i == len(CHART):
-            out.append([(VOICE[c1][0], BAR, False)])
-        elif 21 <= i <= 36:
+        lo1, mid1, hi1 = VOICE_CL[c1]
+        lo2, mid2, hi2 = VOICE_CL[c2]
+        if i in CLARINET_LEAD_BARS:
+            out.append(list(MEL_CL[i - 1]))
+        elif i == 3:
+            # Intro bar 3 (Fl. lead): warm low half notes
+            out.append([(lo1, 2 * Q, False), (mid2, 2 * Q, False)])
+        elif i == 4:
+            # Intro bar 4: half note on beats 1-2, then joins flute on "We're goin'" pickup into bar 5
+            out.append([(lo1, 2 * Q, False)] + list(MEL_CL[3][1:]))
+        elif i in (10, 11):
+            # Chorus A (bars 9-12, Fl. lead): quarter pulse on beats 1-2 filling Fl. eighth rest, half note under triplets
+            out.append([(lo1, Q, False), (mid1, Q, False), (hi2, 2 * Q, False)])
+        elif i in (12, 20):
+            out.append([(lo1, 2 * Q, False), (mid2, Q, False), (hi2, Q, False)])
+        elif i <= 19:
+            out.append([(lo1, 2 * Q, False), (mid2, 2 * Q, False)])
+        elif 21 <= i <= 30:
+            # Climax B (bars 21-24, 29-30, Fl. lead): driving quarter-note arpeggios
             if c1 == c2:
-                lo, mid, hi = VOICE[c1]
-                out.append([(lo, Q, False), (mid, Q, False), (hi, Q, False), (mid, Q, False)])
+                out.append([(lo1, Q, False), (mid1, Q, False), (hi1, Q, False), (mid1, Q, False)])
             else:
-                out.append([(VOICE[c][k], Q, False) for c in (c1, c2) for k in (0, 1)])
-        elif i <= 20:
-            out.append([(VOICE[c1][0], 2 * Q, False), (VOICE[c2][1], 2 * Q, False)])
+                out.append([(VOICE_CL[c][k], Q, False) for c in (c1, c2) for k in (0, 1)])
+        elif i == 40:
+            # Ending bar 40: supports flute triplets on beats 1-2, then joins pickup "You know that" into bar 41
+            out.append([(lo1, 2 * Q, False)] + list(MEL_CL[39][6:]))
         else:
-            out.append([(VOICE[c][0], 2 * Q, False) for c in (c1, c2)])
+            # Ending C even bars (38, 42) while flute leads
+            out.append([(lo1, 2 * Q, False), (mid2, 2 * Q, False)])
     return out
 
 
 def written(music):
-    """Concert -> B-flat clarinet (major 2nd up)."""
+    """Concert -> B-flat clarinet (major 2nd up, written G major E3-A4)."""
     return [[(transpose(p, 1, 2), d, t) for p, d, t in m] for m in music]
 
 
-DYN = {1: "mp", 5: "mf", 21: "f"}
+DYN_FL = {1: "p", 3: "mf", 5: "mp", 9: "f", 13: "mp", 17: "f", 21: "f", 25: "mf", 29: "f", 31: "mf", 35: "f"}
+DYN_CL = {1: "mf", 3: "mp", 5: "f", 9: "mp", 13: "f", 17: "mp", 21: "mf", 25: "f", 29: "mf", 31: "f"}
 PARTS = {
-    "flute": dict(name="Flute", abbr="Fl.", music=melody_bars(), fifths=0,
-                  sound="wind.flutes.flute", dyn=DYN),
-    "clarinet": dict(name="Clarinet in B♭", abbr="Cl.", music=written(clarinet()), fifths=2,
-                     transpose=(-1, -2), sound="wind.reed.clarinet.bflat", dyn=DYN),
+    "flute": dict(name="Flute", abbr="Fl.", music=flute(), fifths=-1,
+                  sound="wind.flutes.flute", dyn=DYN_FL),
+    "clarinet": dict(name="Clarinet in B♭", abbr="Cl.", music=written(clarinet()), fifths=1,
+                     transpose=(-1, -2), sound="wind.reed.clarinet.bflat", dyn=DYN_CL),
 }
 REHEARSAL = {5: "A", 21: "B", 37: "C"}
 WORDS = {4: "cresc.", 43: "rit."}

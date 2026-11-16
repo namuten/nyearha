@@ -1,18 +1,16 @@
 #!/usr/bin/env python3
 """그대 안의 블루 (김현철 작곡, 이현승 작사, 이소라·김현철 노래, 1992) -- flute + B-flat clarinet duet -> MusicXML.
 
-Copyrighted song; published here by the user's decision (2026-11-13).
+Copyrighted song; published here by the user's decision (2026-11-13, rearranged 2026-11-16).
 Melody: the user's lead sheet (source/*.jpg, not committed), first verse + chorus, keys as on the sheet
-(F major, then B-flat major from bar 10). 4/4, quarter = 70, 24 bars, about 1:30.
+(F major, then B-flat major from bar 10). 4/4, quarter = 70, 24 bars, about 1:32.
+Arranged as a vocal-style duet where clarinet (김현철 register, written E3-G4 below the break) and flute
+(이소라 register, concert D4-Bb5) trade phrases and unite in octaves on the final line.
 
-  bars  1-4   intro  (sheet BbM7 - C, flute pick-up line in bar 3)        mp
-  bars  5-9   A  "난 난 눈을 감아요 ... 밀려오네"  (F major)               mp
-  bars 10-15  B  "저 파란 어둠 속에서 ... 곁에 있는데"  (B-flat major)      mf
-  bars 16-24  C  chorus "사랑은 아니지만 ... 그대"                         f -> 23 rit., fermata
-
-Flute keeps the original rhythm (16ths, triplets, ties), concert D4-Bb5.
-Clarinet = jazz-style accompaniment from 7th chords: half notes root -> 7th (guide tone),
-quarter-note walking line (R-3-5-7) in the chorus and where the flute rests. Written E3-G4, below the break.
+  bars  1-4   intro  (1-2 jazz pads, 3-4b2 Fl. pickup solo <-> 4b3-4 Cl. walking lead-in)   mp
+  bars  5-9   A  verse (F major: 5-7b3 Cl. lead "난 난 눈을 감아요..." <-> 7b4-9 Fl. lead "이제 어둠이 밀려오네")  mf
+  bars 10-15  B  bridge (Bb major: 10-12 Fl. lead "저 파란 어둠 속에서..." <-> 13-15b3 Cl. lead "세상은 아직...")  mf
+  bars 16-24  C  chorus (16-17 Fl. <-> 18-19b3 Cl. <-> 19b4-21 Fl. <-> 22b1-3 Cl. -> 22b4-24 Duet, rit., fermata) f
 
 Durations are in 12ths of a quarter (quarter = 12, eighth = 6, 16th = 3, triplet eighth = 4, 4/4 bar = 48).
 """
@@ -132,19 +130,65 @@ def root(chord):
     return in_range(SPELL[chord][0])[0]
 
 
+MEL_FL = bars(SHEET)
+MEL_CL = [[(transpose(p, -7, -12), d, t) for p, d, t in m] for m in MEL_FL]
+
+WALK = {4, 9, 12, 16, 17, 20, 21}       # quarter-note walking when flute leads or rests
+
+
 def melody_bars():
-    return bars(SHEET)
-
-
-WALK = {4, 9, 12} | set(range(16, 24))   # quarter-note walking: flute rests (4, 9, 12) and the chorus
+    """Flute in CONCERT pitch (D4-Bb5): trades vocal phrases with clarinet and unites in octaves at the end."""
+    out = []
+    for i in range(1, 25):
+        if i == 1:
+            out.append([("F4", 2 * Q, False), ("D5", 2 * Q, False)])
+        elif i == 2:
+            out.append([("E4", 2 * Q, False), ("C5", 2 * Q, False)])
+        elif i in (3, 4, 8, 9, 10, 11, 12, 16, 17, 20, 21, 23, 24):
+            out.append(list(MEL_FL[i - 1]))
+        elif i == 5:
+            # Verse A (bars 5-7b3, Cl. leads): smooth upper jazz guide tones
+            out.append([("F4", 2 * Q, False), ("E5", 2 * Q, False)])
+        elif i == 6:
+            out.append([("G4", 2 * Q, False), ("E5", 2 * Q, False)])
+        elif i == 7:
+            # Supports Cl. on beats 1-3, then enters with pickup "이제" (r:6 D4:3 D4:3) on beat 4
+            out.append([("A4", 2 * Q, False), ("F4", Q, False)] + list(MEL_FL[6][4:]))
+        elif i == 13:
+            # Bridge B (bars 13-15b3, Cl. leads): upper harmonic pads
+            out.append([("G4", 2 * Q, False), ("D5", 2 * Q, False)])
+        elif i == 14:
+            out.append([("G4", 2 * Q, False), ("F5", 2 * Q, False)])
+        elif i == 15:
+            # Rising quarter arpeggio on beats 1-3, then enters with chorus pickup "사-" (r:6 Bb4:6) on beat 4
+            out.append([("F4", Q, False), ("A4", Q, False), ("D5", Q, False)] + list(MEL_FL[14][1:]))
+        elif i == 18:
+            # Chorus C (bars 18-19b3, Cl. leads "어둠은 사라지네"): quarter-note upper accompaniment
+            out.append([("G4", Q, False), ("Bb4", Q, False), ("A4", Q, False), ("C5", Q, False)])
+        elif i == 19:
+            # Supports Cl. on beats 1-3, then enters with pickup "오 시간" (r:6 Bb4:3 Bb4:3) on beat 4
+            out.append([("Bb4", 2 * Q, False), ("D5", Q, False)] + list(MEL_FL[18][3:]))
+        elif i == 22:
+            # Supports Cl. on beats 1-3 ("흐르네"), then joins pickup "내 눈-" (r:6 G4:3 G4:3) for final octave duet
+            out.append([("G4", Q, False), ("Bb4", Q, False), ("A4", Q, False)] + list(MEL_FL[21][4:]))
+    return out
 
 
 def clarinet():
-    """concert. Half notes root -> 7th; walking bars R-3-5-7 (two chords: R-3, R-3); last bar whole root."""
+    """Clarinet in CONCERT pitch (D3-F4 = written E3-G4, below the break): trades phrases with flute + jazz bass/walk."""
     out = []
     for i, (c1, c2) in enumerate(CHART, start=1):
-        if i == len(CHART):
-            out.append([(root(c1), BAR, False)])
+        if i in (5, 6, 13, 14, 18, 22, 23, 24):
+            out.append(list(MEL_CL[i - 1]))
+        elif i == 7:
+            # Finishes "사라져" on beats 1-3, then plays Dm7 root on beat 4 while flute enters
+            out.append(list(MEL_CL[6][:4]) + [("D3", Q, False)])
+        elif i == 15:
+            # Holds "있는데" on beats 1-3 (tied from bar 14), then F3 on beat 4 while flute enters
+            out.append([("Bb3", 3 * Q, False), ("F3", Q, False)])
+        elif i == 19:
+            # Finishes "사라지-네" on beats 1-3 (staying <= concert F4 = written G4), then D3 on beat 4
+            out.append([("F4", 2 * Q, False), ("D4", 6, False), ("F4", 6, False), ("D3", Q, False)])
         elif i in WALK:
             seq = []
             for c, tones in ((c1, (0, 1, 2, 3)),) if c1 == c2 else ((c1, (0, 1)), (c2, (0, 1))):
@@ -167,12 +211,13 @@ def written(music):
 
 
 KEYS = {1: -1, 10: -2}                   # concert key signature changes (fifths)
-DYN = {1: "mp", 10: "mf", 16: "f"}
+DYN_FL = {1: "p", 3: "mp", 5: "p", 7: "mf", 10: "mf", 13: "mp", 15: "f", 18: "mp", 19: "f", 22: "mp", 23: "f"}
+DYN_CL = {1: "mp", 5: "mf", 8: "mp", 10: "mp", 13: "mf", 16: "mf", 18: "f", 20: "mf", 22: "f"}
 PARTS = {
     "flute": dict(name="Flute", abbr="Fl.", music=melody_bars(), shift=0,
-                  sound="wind.flutes.flute", dyn=DYN),
+                  sound="wind.flutes.flute", dyn=DYN_FL),
     "clarinet": dict(name="Clarinet in B♭", abbr="Cl.", music=written(clarinet()), shift=2,
-                     transpose=(-1, -2), sound="wind.reed.clarinet.bflat", dyn=DYN),
+                     transpose=(-1, -2), sound="wind.reed.clarinet.bflat", dyn=DYN_CL),
 }
 REHEARSAL = {5: "A", 10: "B", 16: "C"}
 WORDS = {23: "rit."}
