@@ -15,6 +15,7 @@ GitHub Pages로 배포되는 개인 저장소 (https://namuten.github.io/nyearha
 | 그대 안의 블루 | `Blue/` | 김현철·이소라 「그대 안의 블루」 플루트·클라리넷 2중주 악보 뷰어 — canon과 같은 구조 |
 | 교가 | `RiverLight/` | 강빛초중 이음학교 교가 플루트 2·클라리넷·트롬본 4중주 악보 뷰어 — canon과 같은 구조 |
 | 샴푸향 | `shampoo/` | 장범준 「흔들리는 꽃들 속에서 네 샴푸향이 느껴진거야」 클라리넷 솔로 악보 뷰어 — canon과 같은 구조 |
+| 시네마 천국 | `CinemaParadiso/` | 엔니오 모리꼬네 「Cinema Paradiso - Love Theme」 클라리넷 솔로 악보 뷰어 — canon과 같은 구조 |
 | 손가락 연습 | `practice/` | 악보·운지 다이어그램·타임라인 동기화 연습 화면 (현재 `Blue` 플루트·클라리넷 적용, 추후 전 곡 확장) |
 | 학습자료 | `study/` | 강동고 중간고사 대비: `범위.md`(고정 범위), `규칙.md`(STEP1~3 절차), `step*_*.md`, 대시보드 `index.html` |
 | 리포트 | `data-report/` | 데이터 시각화 리포트 |
@@ -248,6 +249,30 @@ GitHub Pages로 배포되는 개인 저장소 (https://namuten.github.io/nyearha
 ### 악보·음원 원본 — `shampoo/source/`
 - `gen.py`(선율 `MELODY`) · `build.sh` · `publish.py` · `mpos2json.py` — Godfather와 같은 구조.
 - 다시 만들기: `bash shampoo/source/build.sh && python3 shampoo/source/publish.py`
+- 현재 assets는 맥 MuseScore 4로 빌드 (2026-11-20).
+
+---
+
+## CinemaParadiso/
+
+**Cinema Paradiso (Love Theme) · 클라리넷 솔로 (고등학생 연주자용 멜로디 편곡)** — Ennio & Andrea Morricone (1988). B♭ 클라리넷 1명.
+기보 다장조/가단조 (♯0/♭0, 콘서트 B♭장조/G단조), 4/4(브리지 2/4), ♩=66 (Andante cantabile, dolce), 21마디, 약 1분 22초.
+
+- 선율 원본: 사용자가 준 피아노 악보 `source/시네마천국 - 러브테마 악보.pdf`(콘서트 B♭장조/G단조 3쪽, 40마디, 커밋 안 함).
+- 원본 PDF의 벡터 음표 좌표를 추출해 **원곡 주선율을 음정·리듬 변형 없이 100% 그대로** 수록하고, 고등학생 연주자가 쉽게 연주할 수 있도록 전 구간을 **클라리넷 레지스터 브레이크(`B4`) 아래의 편안한 음역(`E3`–`A4`, 기보 다장조/가단조 조표 없음 · 콘서트 B♭장조/G단조 원키 그대로)**으로 배치 (2026-11-20).
+- 메뉴: 클라리넷 하나. 파일 `assets/cinema_clarinet.pdf|mp3`, `assets/png/cinema_clarinet-1.png`.
+
+### 음악 구성 (21마디, 브레이크 아래 `E3`–`A4`)
+- **1 도입(Intro, mp)**: 원곡 1마디 호흡(`D4:12- r:4`).
+- **A(2–10) 전반부 주선율(mp dolce e cantabile → 7 mf → 8 mp)**:
+  - `Gm–Cm7 | F–B♭ | 2/4 B♭maj7 | Gm–B♭/F | E♭maj7–Cm7 | Am7♭5–D7♭9 | Gm–Gm7/F | E♭maj7–Edim | D7sus4–D7` 반종지까지 원곡 선율을 그대로 제시.
+- **B(11–21) 후반부 주선율(mf espressivo → 16 f appassionato → 20 rit. e dim. → 21 p 늘임표)**:
+  - 후반부 주선율을 한 단계 풍부한 셈여림(`mf` → `f`)으로 노래한 뒤 정격종지(`E♭maj7–Edim | B♭/F–F | E♭/B♭–B♭ | B♭maj7`) 페르마타로 마무리.
+- 음역 및 난이도: 기보 다장조/가단조(조표 없음) `E3`–`A4` (전 구간 레지스터 브레이크 아래). 임시표는 원곡 선율의 반음 보조음 `G#3`(6·15마디) 1개뿐.
+
+### 악보·음원 원본 — `CinemaParadiso/source/`
+- `gen.py`(선율 `MELODY`) · `build.sh` · `publish.py` · `mpos2json.py` — shampoo와 같은 구조.
+- 다시 만들기: `bash CinemaParadiso/source/build.sh && python3 CinemaParadiso/source/publish.py`
 - 현재 assets는 맥 MuseScore 4로 빌드 (2026-11-20).
 
 ---
