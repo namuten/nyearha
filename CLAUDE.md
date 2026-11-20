@@ -14,6 +14,7 @@ GitHub Pages로 배포되는 개인 저장소 (https://namuten.github.io/nyearha
 | Golden | `Golden/` | HUNTR/X 「Golden」 플루트·클라리넷 2중주 악보 뷰어 — canon과 같은 구조 |
 | 그대 안의 블루 | `Blue/` | 김현철·이소라 「그대 안의 블루」 플루트·클라리넷 2중주 악보 뷰어 — canon과 같은 구조 |
 | 교가 | `RiverLight/` | 강빛초중 이음학교 교가 플루트 2·클라리넷·트롬본 4중주 악보 뷰어 — canon과 같은 구조 |
+| 샴푸향 | `흔들리는 꽃들 속에서 네 샴푸 향이 느껴진 거야/` | 장범준 「흔들리는 꽃들 속에서 네 샴푸향이 느껴진거야」 클라리넷 솔로 악보 뷰어 — canon과 같은 구조 (폴더 이름은 사용자가 정한 한글 곡명) |
 | 손가락 연습 | `practice/` | 악보·운지 다이어그램·타임라인 동기화 연습 화면 (현재 `Blue` 플루트·클라리넷 적용, 추후 전 곡 확장) |
 | 학습자료 | `study/` | 강동고 중간고사 대비: `범위.md`(고정 범위), `규칙.md`(STEP1~3 절차), `step*_*.md`, 대시보드 `index.html` |
 | 리포트 | `data-report/` | 데이터 시각화 리포트 |
@@ -24,7 +25,7 @@ GitHub Pages로 배포되는 개인 저장소 (https://namuten.github.io/nyearha
   새 악보 폴더를 만들면 루트 `index.html`의 `SCORES` 배열에 한 줄 추가한다 (`href`, `icon`, `title`, `sub`, `meta`).
 - 각 영역 페이지 맨 위에 메인으로 가는 `<a class="home-link" href="../">← 메인</a>`이 있다 (영역 밖을 가리키는 유일한 `../`).
   새 악보 페이지도 canon처럼 사이드바 `.brand` 맨 위에 넣는다.
-- `canon/`, `Godfather/`, `YouRaiseMeUp/`, `Golden/`, `Blue/`, `RiverLight/` 안의 경로는 모두 폴더 내부 상대경로 (`../` 참조, 루트와 공유하는 CSS/JS 없음).
+- `canon/`, `Godfather/`, `YouRaiseMeUp/`, `Golden/`, `Blue/`, `RiverLight/`, `흔들리는 꽃들 속에서 네 샴푸 향이 느껴진 거야/` 안의 경로는 모두 폴더 내부 상대경로 (`../` 참조, 루트와 공유하는 CSS/JS 없음).
   - **예외**: 악보 페이지 왼쪽 메뉴의 연습 링크(`../practice/#<piece>_<part>`)와, `practice/`가 각 악보 폴더의 `assets/`(MP3, 악보 PNG), `logo.png`, `pattern.svg`, `manifest.json`을 **읽기 전용**으로 참조하는 것만 허용한다.
 
 ## Git 작업 방식
@@ -220,6 +221,29 @@ GitHub Pages로 배포되는 개인 저장소 (https://namuten.github.io/nyearha
 - `gen.py`(원곡 선율 `SONG`·코드표 `CHORDS`·편곡 구성 `FORM`) · `build.sh` · `publish.py` · `mpos2json.py` — Godfather와 같은 구조.
 - 다시 만들기: `bash RiverLight/source/build.sh && python3 RiverLight/source/publish.py`
 - 현재 assets는 리눅스 MuseScore 4.7.5 AppImage로 빌드 (2026-11-20). 리눅스에서는 **`LANG=C.UTF-8`** 필수 — 아니면 MusicXML의 한글(작곡자·부제)이 일부 잘림.
+
+---
+
+## 흔들리는 꽃들 속에서 네 샴푸 향이 느껴진 거야/
+
+**흔들리는 꽃들 속에서 네 샴푸향이 느껴진거야 · 클라리넷 솔로** — 장범준 (2019). B♭ 클라리넷 1명.
+기보 C장조 (콘서트 B♭장조), 4/4, ♩=100, 24마디, 약 1분 5초 (요청: 1분 정도).
+
+- **저작권이 살아 있는 곡** — 다른 대중가요 곡들과 같이 공개 게시 (2026-11-20).
+- 폴더 이름은 사용자가 정한 한글 곡명 그대로 (띄어쓰기 포함). 안의 파일 이름은 `shampoo_` 접두어로 영문.
+- 선율 원본: 사용자가 준 클라리넷 멜로디 악보(기보 D♭장조 ♭5, ♩=100, 커밋 안 함). 연주하기 쉽게 **반음 내려 기보 C장조**로 (음역 A3–E5).
+- 페이지는 RiverLight 것을 복사해 제목만 바꿈. 제목이 길어 `.title-cover`를 넓히고(left 31.5%, width 37%) 렌즈 안 제목을 두 줄·작은 글씨로 씀.
+- 메뉴: 클라리넷 하나. 파일 `assets/shampoo_clarinet.pdf|mp3`, `assets/png/shampoo_clarinet-1.png`.
+
+### 음악 구성 (원본 5–27마디 + 마무리)
+- 1–8 1절 앞부분(원본 5–12, mp). 8마디는 원본의 온쉼표 대신 짧은 하행 연결구(G–F–E–D–C).
+- A 9–16 1절 뒷부분(원본 13–20, 13 cresc. → 15 mf).
+- B 17–23 후렴(원본 21–27, f, 23 rit.) → 24 C5 온음표 늘임표.
+
+### 악보·음원 원본 — `source/`
+- `gen.py`(선율 `MELODY`) · `build.sh` · `publish.py` · `mpos2json.py` — Godfather와 같은 구조.
+- 다시 만들기: `bash "흔들리는 꽃들 속에서 네 샴푸 향이 느껴진 거야/source/build.sh" && python3 "흔들리는 꽃들 속에서 네 샴푸 향이 느껴진 거야/source/publish.py"`
+- 현재 assets는 리눅스 MuseScore 4.7.5로 빌드 (2026-11-20, `LANG=C.UTF-8`).
 
 ---
 
