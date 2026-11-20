@@ -13,6 +13,7 @@ GitHub Pages로 배포되는 개인 저장소 (https://namuten.github.io/nyearha
 | You Raise Me Up | `YouRaiseMeUp/` | 「You Raise Me Up」 후렴 플루트·클라리넷 2중주 악보 뷰어 — canon과 같은 구조 |
 | Golden | `Golden/` | HUNTR/X 「Golden」 플루트·클라리넷 2중주 악보 뷰어 — canon과 같은 구조 |
 | 그대 안의 블루 | `Blue/` | 김현철·이소라 「그대 안의 블루」 플루트·클라리넷 2중주 악보 뷰어 — canon과 같은 구조 |
+| 교가 | `RiverLight/` | 강빛초중 이음학교 교가 플루트 2·클라리넷·트롬본 4중주 악보 뷰어 — canon과 같은 구조 |
 | 손가락 연습 | `practice/` | 악보·운지 다이어그램·타임라인 동기화 연습 화면 (현재 `Blue` 플루트·클라리넷 적용, 추후 전 곡 확장) |
 | 학습자료 | `study/` | 강동고 중간고사 대비: `범위.md`(고정 범위), `규칙.md`(STEP1~3 절차), `step*_*.md`, 대시보드 `index.html` |
 | 리포트 | `data-report/` | 데이터 시각화 리포트 |
@@ -23,7 +24,7 @@ GitHub Pages로 배포되는 개인 저장소 (https://namuten.github.io/nyearha
   새 악보 폴더를 만들면 루트 `index.html`의 `SCORES` 배열에 한 줄 추가한다 (`href`, `icon`, `title`, `sub`, `meta`).
 - 각 영역 페이지 맨 위에 메인으로 가는 `<a class="home-link" href="../">← 메인</a>`이 있다 (영역 밖을 가리키는 유일한 `../`).
   새 악보 페이지도 canon처럼 사이드바 `.brand` 맨 위에 넣는다.
-- `canon/`, `Godfather/`, `YouRaiseMeUp/`, `Golden/`, `Blue/` 안의 경로는 모두 폴더 내부 상대경로 (`../` 참조, 루트와 공유하는 CSS/JS 없음).
+- `canon/`, `Godfather/`, `YouRaiseMeUp/`, `Golden/`, `Blue/`, `RiverLight/` 안의 경로는 모두 폴더 내부 상대경로 (`../` 참조, 루트와 공유하는 CSS/JS 없음).
   - **예외**: 악보 페이지 왼쪽 메뉴의 연습 링크(`../practice/#<piece>_<part>`)와, `practice/`가 각 악보 폴더의 `assets/`(MP3, 악보 PNG), `logo.png`, `pattern.svg`, `manifest.json`을 **읽기 전용**으로 참조하는 것만 허용한다.
 
 ## Git 작업 방식
@@ -196,6 +197,29 @@ GitHub Pages로 배포되는 개인 저장소 (https://namuten.github.io/nyearha
 ### 악보·음원 원본 — `Blue/source/`
 - 구성은 Golden과 같음: `gen.py` · `build.sh` · `publish.py` · `mpos2json.py` · `test_gen.py`. 선율은 콘서트음으로 적음.
 - 다시 만들기: `python3 -m unittest discover -s Blue/source && bash Blue/source/build.sh && python3 Blue/source/publish.py`
+
+---
+
+## RiverLight/
+
+**River Light · 강빛초중 이음학교 교가** — 작곡 홍경서, 작사 임채현·안정민. 플루트 2 · B♭ 클라리넷 · 트롬본 4중주.
+콘서트 G장조, 4/4, ♩=128, 53마디, 약 1분 46초. 학교 교가라 인터넷 악보가 없어 사용자가 보낸 악보 사진(원곡 33마디, 커밋 안 함)을 옮겨 적음 (2026-11-20).
+
+- 페이지는 Godfather 것을 복사해 제목만 바꿈 (`.title-cover`도 Godfather 값).
+- 메뉴: 합주(총보) → 플루트 1 → 플루트 2 → 클라리넷 → 트롬본. 파일 `assets/riverlight_<id>.pdf|mp3`, `assets/png/riverlight_<id>-<쪽>.png`.
+
+### 편곡 구성
+- 1–4 도입(원곡 29–32, mf) · A 5–20 1절(원곡 1–16, mp) · B 21–36 2절(원곡 1–16, p → 36 cresc.) · C 37–53 후렴(원곡 17–33, f) → 52 rit., 53 늘임표
+- 플루트 1: 도입·1절·후렴 선율을 한 옥타브 위로 (원곡은 B3까지 내려가 플루트로 못 붊). 2절은 긴 음 화음.
+- 플루트 2: 선율 아래 3·4·6도 화음(같은 리듬), 2절은 긴 음 화음.
+- 클라리넷: 도입·1절 긴 음 안쪽 화음, 2절·후렴은 원곡 높이 선율 (후렴은 플루트 1과 옥타브).
+- 트롬본: 근음 베이스 (도입·1절 2분음표 근음–5음, 2절·후렴 4분음표 근음–5음).
+- 화음은 `gen.py`의 `CHORDS`(원곡 코드 기호, 박마다 하나)에서 자동 생성. 기보 조: 클라리넷 A장조(♯3), 나머지 G장조.
+
+### 악보·음원 원본 — `RiverLight/source/`
+- `gen.py`(원곡 선율 `SONG`·코드표 `CHORDS`·편곡 구성 `FORM`) · `build.sh` · `publish.py` · `mpos2json.py` — Godfather와 같은 구조.
+- 다시 만들기: `bash RiverLight/source/build.sh && python3 RiverLight/source/publish.py`
+- 현재 assets는 리눅스 MuseScore 4.7.5 AppImage로 빌드 (2026-11-20). 리눅스에서는 **`LANG=C.UTF-8`** 필수 — 아니면 MusicXML의 한글(작곡자·부제)이 일부 잘림.
 
 ---
 
