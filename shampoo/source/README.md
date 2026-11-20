@@ -11,8 +11,8 @@
 
 ```bash
 brew install --cask musescore   # MuseScore 4 (맥)
-bash "흔들리는 꽃들 속에서 네 샴푸 향이 느껴진 거야/source"/build.sh
-python3 "흔들리는 꽃들 속에서 네 샴푸 향이 느껴진 거야/source"/publish.py
+bash shampoo/source/build.sh
+python3 shampoo/source/publish.py
 ```
 
-리눅스에서는 `LANG=C.UTF-8 MSCORE=<mscore4 경로> bash "흔들리는 꽃들 속에서 네 샴푸 향이 느껴진 거야/source"/build.sh` (UTF-8 로캘이 아니면 한글 제목이 잘림).
+리눅스에서는 `LANG=C.UTF-8 MSCORE=<mscore4 경로> bash shampoo/source/build.sh` (UTF-8 로캘이 아니면 한글 제목이 잘림).

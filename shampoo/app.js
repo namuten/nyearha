@@ -3,7 +3,7 @@
   const audio = $("audio"), play = $("play"), seek = $("seek"), time = $("time"), pagesEl = $("pages");
   const fmt = (s) => !isFinite(s) ? "0:00" : `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 
-  const V = "?v=20261116c";
+  const V = "?v=20261120c";
   let pieces, cur = null, curMeasure = -1, curRow = "", raf = 0, pendingSeekSec = null;
   try {
     pieces = await (await fetch("manifest.json" + V, { cache: "no-cache" })).json();

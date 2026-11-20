@@ -12,7 +12,7 @@ sys.path.insert(0, S)
 from mpos2json import measures  # noqa: E402
 
 ITEMS = [  # id, 메뉴 이름, 설명
-    ("clarinet", "클라리넷", "B♭ 솔로 · 기보 C장조"),
+    ("clarinet", "클라리넷", "B♭ 솔로 · 기보 G장조(콘서트 F장조)"),
 ]
 
 os.makedirs(os.path.join(G, "assets", "png"), exist_ok=True)
