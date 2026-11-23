@@ -22,8 +22,9 @@ GitHub Pages로 배포되는 개인 저장소 (https://namuten.github.io/nyearha
 | (기타) | 루트 `travel_plan.html` | 강원도 가족여행 — 어디에도 링크 안 됨, 주소로만 접근 |
 
 - 한 영역 작업 시 다른 영역 파일은 건드리지 않는다.
-- **메인 페이지 구성**: "♪ 악보"(큰 카드, 계속 추가됨)와 "그 밖에"(학습자료·리포트, 작은 칩)로 구분.
+- **메인 페이지 구성**: I. Repertoire(악보, 큰 카드, 계속 추가됨) → II. Game(`GAMES` 배열, 악보와 같은 카드) → III. Archive & Notes(학습자료·리포트, 작은 칩).
   새 악보 폴더를 만들면 루트 `index.html`의 `SCORES` 배열에 한 줄 추가한다 (`href`, `icon`, `title`, `sub`, `meta`).
+  - Game은 별도 저장소 `namuten/goofyfish`(Astro, 같은 GitHub Pages 계정)로, 절대 URL `https://namuten.github.io/goofyfish/`로 연결한다.
 - 각 영역 페이지 맨 위에 메인으로 가는 `<a class="home-link" href="../">← 메인</a>`이 있다 (영역 밖을 가리키는 유일한 `../`).
   새 악보 페이지도 canon처럼 사이드바 `.brand` 맨 위에 넣는다.
 - `canon/`, `Godfather/`, `YouRaiseMeUp/`, `Golden/`, `Blue/`, `RiverLight/`, `shampoo/` 안의 경로는 모두 폴더 내부 상대경로 (`../` 참조, 루트와 공유하는 CSS/JS 없음).
