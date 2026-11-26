@@ -33,8 +33,44 @@ GitHub Pages로 배포되는 개인 저장소 (https://namuten.github.io/nyearha
 ## Git 작업 방식
 
 - `git commit` / `git push`는 사용자가 직접 실행 — Claude는 스테이징까지 하고 커밋 메시지를 제안한다.
+- **예외 — 사용자가 "배포해줘"라고 하면** Claude가 묻지 않고 끝까지 진행한다 (이 사이트는 `main` 머지가 곧 배포):
+  1. `main`이면 먼저 브랜치를 만든다. 이번 작업 파일만 스테이징 (사용자가 준 악보 원본 PDF·JPG·GIF, 기획서 `.docx` 등 추적 안 하는 파일은 절대 넣지 않음).
+  2. 커밋 (`<type>(<scope>): <subject>` + body에 이유) → `git push -u origin <branch>`.
+  3. PR 생성 (본문: 변경 이유, 테스트 방법) → `gh pr merge --squash --delete-branch` → `git checkout main && git pull`.
+  4. PR 주소와 사이트 주소를 알려준다 (반영 1~2분, ⌘⇧R / Ctrl+Shift+R).
+- **gh 계정**: 저장소 주인은 `namuten`. gh에 다른 계정이 활성화돼 있으면 PR 생성·머지는 `GH_TOKEN=$(gh auth token --user namuten) gh pr ...`로 실행한다 (활성 계정은 바꾸지 않음).
 - 작업은 `feature/`, `fix/`, `chore/` 브랜치에서 하고 PR → squash 머지.
 - 커밋 메시지: `<type>(<scope>): <subject>` (예: `feat(canon): ...`).
+
+## 새 악보를 만들 때 (작업 방식)
+
+- **선율은 기억으로 쓰지 않는다.** `gen.py`에 선율을 적기 전에 사용자에게 참고 자료(악보 이미지/PDF, 리드시트, MIDI)를 먼저 받는다. 퍼블릭 도메인 원본 파일이 있으면 그걸 써도 된다 (Godfather의 flutetunes MIDI처럼).
+  - 이유: YouRaiseMeUp 첫 버전을 기억으로 썼다가 "이 음악인지도 모르겠다"는 반응으로 전부 다시 함.
+  - 받은 참고 자료는 커밋하지 않는다 (`source/`에 두되 추적 안 함).
+- **편곡 기본값**: 연주자는 고등학생 — 쉽게, 하지만 알아들을 수 있고 임팩트 있게.
+  - 원곡 선율 리듬은 살리고(8분음표·점4분음표 OK), 단순화는 반주에서 한다 (붙임줄·16분음표·임시표 없이, 클라리넷은 브레이크 아래).
+  - 대중가요·영화음악은 전곡보다 **후렴/클라이맥스 중심** (예: 짧은 도입 + 후렴 ×2 mf→f + rit.·늘임표, 1~1.5분).
+  - 콘서트 조는 B♭ 클라리넷 임시표가 적게 나오는 조로 (콘서트 B♭ → 기보 C).
+- 진행은 이전 악보 폴더의 페이지 + `source/` 파이프라인을 복사해서 같은 방식으로. 결과에 영향을 주는 것(곡, 악기, 길이, 난이도)만 묻고 진행한다 — 별도 계획서 단계는 두지 않는다.
+
+## 윈도우 PC에서 작업할 때 — WSL2(Ubuntu) 사용
+
+맥과 같은 환경을 만들려고 윈도우에서는 **WSL2 Ubuntu 안에서** 작업한다 (윈도우 그대로 쓰면 `build.sh`·`python3`·한글 인코딩·CRLF 줄바꿈 문제가 생김). WSL 안에서는 스크립트를 고칠 필요가 없다.
+
+1. PowerShell(관리자)에서 `wsl --install` → 재부팅 → Ubuntu 터미널에서 Claude Code 설치.
+2. 저장소는 **WSL 안쪽**에 둔다: `~/git/nyearha` (`/mnt/c/...` 윈도우 드라이브에 두지 않음 — 느리고 줄바꿈·권한 문제).
+3. 도구 설치: `git`, `gh`(`gh auth login`을 **namuten** 계정으로), `python3`, `node`, `ffmpeg`(ffprobe 포함).
+4. MuseScore 4.7.x **리눅스 AppImage** (맥과 같은 4.7.x 버전):
+   - WSL에서 바로 안 열리면 `./MuseScore-*.AppImage --appimage-extract` 후 `squashfs-root/AppRun` 실행.
+   - 화면 없이 변환이 안 되면 `QT_QPA_PLATFORM=offscreen`.
+   - 경로는 환경변수로: `export MSCORE=~/apps/musescore/squashfs-root/AppRun` (`build.sh`, `practice/source/extract.py`가 `MSCORE`를 읽음).
+   - **`LANG=C.UTF-8` 필수** — 아니면 MusicXML의 한글(작곡자·부제)이 일부 잘림 (RiverLight 때 확인).
+   - `~/.bashrc`에 `export LANG=C.UTF-8`과 `export MSCORE=...`를 넣어 둔다.
+5. 확인: `python3 -m unittest discover -s practice/source` · `node --test practice/core.test.mjs` 통과.
+   로컬 서버 `python3 -m http.server`를 띄우면 윈도우 브라우저에서 `http://localhost:8000/`으로 열린다.
+6. **주의**: 리눅스 빌드는 글꼴 차이로 맥 PNG와 미세하게 다를 수 있다. 기존 곡을 다시 빌드하면 **기존 assets와 비교한 뒤에만** 덮어쓴다 (새 곡은 상관없음).
+   윈도우를 위해 저장소 스크립트를 고치는 경우 맥에서도 그대로 동작해야 한다.
+- 사용자가 준 악보 원본(PDF·JPG·GIF)은 커밋되지 않으므로 다른 PC에는 없다 — 필요하면 사용자에게 받는다.
 
 ---
 
