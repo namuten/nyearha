@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { noteIndexAt, nextPlayedIndex, keyChanges, solfege, loopBounds, beatMs, measureProgress } from "./core.js";
+import { noteIndexAt, nextPlayedIndex, keyChanges, solfege, loopBounds, beatMs, measureProgress, beatsAt } from "./core.js";
 
 const N = [{ms:0,end:1000,rest:true},{ms:1000,end:2000,pitch:"G3",rest:false},{ms:2000,end:3000,pitch:"A3",rest:false}];
 test("before first / inside / at boundary", () => {
@@ -17,6 +17,12 @@ test("loop mid range", () =>
   assert.deepEqual(loopBounds([0, 4000, 8000], 14, 1, 2), {from: 0, to: 8000}));
 test("beat ms honours rate", () => assert.equal(beatMs([0, 4000, 8000], 14, 4, 1, 0.5), 2000));
 test("beat ms last measure", () => assert.equal(beatMs([0, 4000, 8000], 14, 4, 3, 1), 1500));
+test("beats per measure follows time changes", () => {
+  assert.equal(beatsAt([4, 2, 4], 4, 2), 2);
+  assert.equal(beatsAt([4, 2, 4], 4, 3), 4);
+  assert.equal(beatsAt(undefined, 4, 2), 4);
+});
+test("beat ms in a 2/4 measure", () => assert.equal(beatMs([0, 4000, 6000], 10, beatsAt([4, 2, 4], 4, 2), 2, 1), 1000));
 test("measure progress before, mid, and last measure", () => {
   assert.deepEqual(measureProgress([0, 4000, 8000], 14, -10), { index: -1, ratio: 0 });
   assert.deepEqual(measureProgress([0, 4000, 8000], 14, 2000), { index: 0, ratio: 0.5 });

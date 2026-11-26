@@ -10,9 +10,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 MSCORE = os.environ.get("MSCORE", "/Applications/MuseScore 4.app/Contents/MacOS/mscore")
 
-# (folder, prefix, title, [part ids]) -- pilot: Blue (flute + clarinet); others are added later
+# (folder, prefix, title, [part ids])
 PIECES = [
     ("Blue", "blue", "그대 안의 블루", ["flute", "clarinet"]),
+    ("CinemaParadiso", "cinema", "Cinema Paradiso", ["clarinet"]),
 ]
 
 
@@ -43,6 +44,17 @@ def parse_notes(xml_text):
             tie_stop = any(t.get("type") == "stop" for t in note.findall("tie"))
             onsets.append({"pitch": pitch, "rest": rest, "measure": num, "tie_stop": tie_stop})
     return onsets, beats
+
+
+def parse_measure_beats(xml_text):
+    """Beats per measure (1-based order), following <time> changes."""
+    beats, out = None, []
+    for measure in ET.fromstring(xml_text).iter("measure"):
+        b = measure.find("attributes/time/beats")
+        if b is not None:
+            beats = int(b.text)
+        out.append(beats)
+    return out
 
 
 def _parse_events(text):
@@ -123,12 +135,16 @@ def extract_part(folder, prefix, part, tmp):
     _mscore("-o", tmp / "x.mscz", xml_path)
     _mscore("-o", tmp / "x.spos", tmp / "x.mscz")
     _mscore("-o", tmp / "x.mpos", tmp / "x.mscz")
-    onsets, beats = parse_notes(xml_path.read_text(encoding="utf-8"))
+    xml_text = xml_path.read_text(encoding="utf-8")
+    onsets, beats = parse_notes(xml_text)
+    measure_beats = parse_measure_beats(xml_text)
     spos = parse_spos((tmp / "x.spos").read_text(encoding="utf-8"))
     mpos = parse_mpos((tmp / "x.mpos").read_text(encoding="utf-8"))
     man = {p["id"]: p for p in json.loads((ROOT / folder / "manifest.json").read_text(encoding="utf-8"))}[part]
     if mpos != [m["ms"] for m in man["measures"]]:
         raise SystemExit(f"{prefix}_{part}: mpos measures differ from {folder}/manifest.json")
+    if len(measure_beats) != len(mpos):
+        raise SystemExit(f"{prefix}_{part}: {len(measure_beats)} measures in MusicXML != {len(mpos)} in mpos")
     mp3 = ROOT / folder / "assets" / f"{prefix}_{part}.mp3"
     inst = part_instrument(part)
     chart = json.loads((ROOT / "practice" / "instruments" / f"{inst}.json").read_text(encoding="utf-8"))
@@ -136,7 +152,7 @@ def extract_part(folder, prefix, part, tmp):
     return {"piece": prefix, "part": part, "instrument": inst, "partLabel": man["label"],
             "mp3": f"../{folder}/assets/{prefix}_{part}.mp3", "score": f"../{folder}/#{part}",
             "pages": [f"../{folder}/{p}" for p in man["pages"]],
-            "seconds": man["seconds"], "beats": beats, "measures": mpos,
+            "seconds": man["seconds"], "beats": beats, "measureBeats": measure_beats, "measures": mpos,
             "measureBoxes": man["measures"], "notes": notes}
 
 
