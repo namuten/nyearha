@@ -44,6 +44,11 @@ export function loopBounds(measures, seconds, start, end) {
   return { from: measures[start - 1], to: measureEnd(measures, seconds, end) };
 }
 
+/** measureNo 마디의 박 수 (박자표가 바뀌는 곡). measureBeats가 없으면 beats. */
+export function beatsAt(measureBeats, beats, measureNo) {
+  return (measureBeats && measureBeats[measureNo - 1]) || beats;
+}
+
 /** 한 박의 ms (재생 속도 rate 반영). */
 export function beatMs(measures, seconds, beats, measureNo, rate) {
   const len = measureEnd(measures, seconds, measureNo) - measures[measureNo - 1];

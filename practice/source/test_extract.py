@@ -2,7 +2,7 @@ import json
 import unittest
 from pathlib import Path
 
-from extract import PIECES, apply_fingering, build_notes, parse_mpos, parse_notes, parse_spos
+from extract import PIECES, apply_fingering, build_notes, parse_measure_beats, parse_mpos, parse_notes, parse_spos
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -48,6 +48,13 @@ class ExtractTest(unittest.TestCase):
         self.assertEqual([o["tie_stop"] for o in onsets], [False, False, False, True, False])
         self.assertEqual([o["measure"] for o in onsets], [1, 1, 2, 2, 2])
         self.assertEqual([o["rest"] for o in onsets], [False, True, False, False, False])
+
+    def test_parse_measure_beats_follows_time_changes(self):
+        xml = XML.replace('<measure number="2">',
+                          '<measure number="2"><attributes><time><beats>2</beats><beat-type>4</beat-type></time></attributes>')
+        xml = xml.replace("</measure></part>", '</measure><measure number="3"><note><rest/><duration>4</duration></note></measure></part>')
+        self.assertEqual(parse_measure_beats(xml), [4, 2, 2])
+        self.assertEqual(parse_measure_beats(XML), [4, 4])
 
     def test_parse_spos(self):
         self.assertEqual(parse_spos(SPOS), [0, 1000, 2000, 3000, 3500])

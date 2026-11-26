@@ -1,5 +1,5 @@
 // 손가락 연습 화면. 순수 로직은 core.js, 여기는 DOM·오디오만.
-import { noteIndexAt, nextPlayedIndex, keyChanges, solfege, loopBounds, beatMs, measureProgress } from "./core.js?v=20261116b";
+import { noteIndexAt, nextPlayedIndex, keyChanges, solfege, loopBounds, beatMs, measureProgress, beatsAt } from "./core.js?v=20261126a";
 
 const $ = (id) => document.getElementById(id);
 const audio = $("audio");
@@ -34,7 +34,7 @@ audio.preservesPitch = true;
 audio.mozPreservesPitch = true;
 audio.webkitPreservesPitch = true;
 
-const V = "?v=20261116c";
+const V = "?v=20261126a";
 let pieces = [];
 let data = null;            // data/<id>.json
 let pendingSeekSec = null;
@@ -138,12 +138,13 @@ function startWithCountIn() {
   const startSec = audio.currentTime;
   const ms = startSec * 1000;
   const measureNo = Math.max(1, noteIndexAt(data.measures.map((m) => ({ ms: m })), ms) + 1);
-  const beat = beatMs(data.measures, data.seconds, data.beats, measureNo, rate);
+  const beats = beatsAt(data.measureBeats, data.beats, measureNo);
+  const beat = beatMs(data.measures, data.seconds, beats, measureNo, rate);
   const t0 = actx.currentTime + 0.05;
   pending.active = true;
   syncPlayButton();
   unlockAudio(startSec);
-  for (let i = 0; i < data.beats; i++) {
+  for (let i = 0; i < beats; i++) {
     click(t0 + (i * beat) / 1000, i === 0);
     pending.timers.push(setTimeout(() => { countInEl.textContent = String(i + 1); }, 50 + i * beat));
   }
@@ -156,7 +157,7 @@ function startWithCountIn() {
     audio.currentTime = startSec;
     audio.muted = false;
     playAudio();
-  }, 50 + data.beats * beat));
+  }, 50 + beats * beat));
 }
 
 // ---------- 재생 제어 ----------
@@ -470,6 +471,12 @@ function fillMeasureSelect(sel, n, value) {
   sel.value = String(value);
 }
 
+// 사이드바 제목·부제·곡 정보 — 각 악보 페이지(<Folder>/index.html)의 .brand · .sidebar-foot 문구와 같게
+const PIECE_INFO = {
+  blue: { title: "그대 안의 블루", sub: "김현철 · 이소라", meta: "콘서트 F→B♭장조 · 4/4 · ♩=70 · 24마디" },
+  cinema: { title: "시네마 천국 (Love Theme)", sub: "Ennio & Andrea Morricone · 클라리넷 솔로", meta: "기보 C장조/A단조 · 4/4 · ♩=66 · 21마디" },
+};
+
 async function buildSidebarMenu(d, id) {
   const menuEl = $("menu");
   const base = d.score.split("#")[0];
@@ -518,7 +525,10 @@ async function load(id) {
   if (token !== loadToken) return;
 
   document.title = `${d.partLabel} 연습 · ${d.title}`;
-  $("pieceTitle").textContent = d.title;
+  const info = PIECE_INFO[d.piece] || { title: d.title, sub: "", meta: "" };
+  $("pieceTitle").textContent = info.title;
+  $("pieceSub").textContent = info.sub;
+  $("sidebarMeta").textContent = info.meta;
   if ($("title")) $("title").textContent = `${d.partLabel} 연습`;
   if ($("desc")) $("desc").textContent = partMeta ? partMeta.desc : `${d.title} · 운지 연습`;
   if ($("dl-pdf") && partMeta) $("dl-pdf").href = `${base}${partMeta.pdf}`;
@@ -542,11 +552,12 @@ async function load(id) {
   marker.hidden = true;
   const titleArtHtml = d.piece === "blue" ? "그대 안의<br>블루"
     : d.piece === "youraisemeup" ? "You Raise<br>Me Up"
+    : d.piece === "cinema" ? "Cinema<br>Paradiso"
     : d.title;
-  const wideCover = d.piece === "youraisemeup" ? " wide" : "";
+  const wideCover = d.piece === "youraisemeup" ? " wide" : d.piece === "cinema" ? " wider" : "";
   scorePagesEl.innerHTML = (d.pages || []).map((src, i) =>
     `<div class="page"><img src="${src}${V}" alt="${d.title} ${d.partLabel} 악보 ${i + 1}쪽" loading="${i ? "lazy" : "eager"}">` +
-    (i === 0 ? `<div class="title-cover${wideCover}"></div><div class="title-art"><img src="${base}logo.png" alt=""><span>${titleArtHtml}</span></div>` : "") +
+    (i === 0 ? `<div class="title-cover${wideCover}"></div><div class="title-art${wideCover}"><img src="${base}logo.png" alt=""><span>${titleArtHtml}</span></div>` : "") +
     `</div>`
   ).join("");
   scorePagesEl.scrollTop = 0;

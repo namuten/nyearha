@@ -12,6 +12,7 @@
   - 불필요한 꾸밈음·도약 없이 원본 악보의 순수 주선율(1마디 도입 + A 전반부 반종지 + B 후반부 정격종지)만 그대로 수록.
 """
 import sys
+from xml.sax.saxutils import escape
 
 TEMPO = 66
 
@@ -202,10 +203,10 @@ def score_xml():
         '<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 4.0 Partwise//EN" '
         '"http://www.musicxml.org/dtds/partwise.dtd">',
         '<score-partwise version="4.0">',
-        f"<work><work-title>{TITLE}</work-title></work>",
-        f"<movement-title>{TITLE}</movement-title>",
-        f'<identification><creator type="composer">{COMPOSER}</creator>'
-        f'<creator type="lyricist">{SUBTITLE}</creator></identification>',
+        f"<work><work-title>{escape(TITLE)}</work-title></work>",
+        f"<movement-title>{escape(TITLE)}</movement-title>",
+        f'<identification><creator type="composer">{escape(COMPOSER)}</creator>'
+        f'<creator type="lyricist">{escape(SUBTITLE)}</creator></identification>',
         '<part-list><score-part id="P1"><part-name>Clarinet in B♭</part-name><part-abbreviation>Cl.</part-abbreviation>'
         '<score-instrument id="P1-I1"><instrument-name>Clarinet in B♭</instrument-name>'
         '<instrument-sound>wind.reed.clarinet.bflat</instrument-sound></score-instrument></score-part></part-list>',

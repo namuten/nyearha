@@ -339,6 +339,35 @@
     "unsw"
    ],
    "verified": true
+  },
+  "G#3": {
+   "keys": [
+    "thumb",
+    "L1",
+    "L2",
+    "L3",
+    "R1",
+    "R2",
+    "R3",
+    "RP_Gs"
+   ],
+   "alt": [],
+   "src": [
+    "wfg",
+    "unsw"
+   ],
+   "verified": true
+  },
+  "A4": {
+   "keys": [
+    "LA"
+   ],
+   "alt": [],
+   "src": [
+    "wfg",
+    "unsw"
+   ],
+   "verified": true
   }
  }
 }

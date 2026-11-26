@@ -18,7 +18,13 @@
         <span class="name">${p.label}</span>
         <span class="sub">${p.desc}${p.seconds ? " · " + fmt(p.seconds) : ""}</span>
       </a>
-    </li>`).join("");
+    </li>`).join("") + `
+    <li class="practice">
+      <a href="../practice/#cinema_clarinet">
+        <span class="name">클라리넷 연습</span>
+        <span class="sub">운지 · 타임라인 · 구간 반복</span>
+      </a>
+    </li>`;
 
   // ---------- 마디 표시 ----------
   const marker = document.createElement("div");

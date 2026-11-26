@@ -361,6 +361,12 @@ body {
   width: 31%;
 }
 
+/* CinemaParadiso 악보 페이지와 같은 값 (긴 원제목) */
+.title-cover.wider {
+  left: 31.5%;
+  width: 37%;
+}
+
 .title-art {
   position: absolute;
   left: 32.5%;
@@ -381,6 +387,10 @@ body {
   white-space: nowrap;
   font: 400 1.9cqw/1 Georgia, "Times New Roman", serif;
   color: #1f1c18;
+}
+
+.title-art.wider span {
+  font: 400 1.6cqw/1.25 Georgia, "Times New Roman", serif;
 }
 
 .marker {
